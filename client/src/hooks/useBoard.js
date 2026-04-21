@@ -49,9 +49,16 @@ export function useBoard(boardId) {
         if (!prev) return prev;
         return {
           ...prev,
-          columns: prev.columns.map((col) =>
-            col.id === card.column_id ? { ...col, cards: [...col.cards, { ...card, reactions: [], replies: [] }] } : col
-          ),
+          columns: prev.columns.map((col) => {
+            if (col.id !== card.column_id) return col;
+            
+            // Filter out optimistic cards with same content to prevent dupes
+            const filteredCards = col.cards.filter(c => 
+              !(c.id.startsWith('temp-') && c.content === card.content) && c.id !== card.id
+            );
+            
+            return { ...col, cards: [...filteredCards, { ...card, reactions: [], replies: [] }] };
+          }),
         };
       });
     };
@@ -159,6 +166,28 @@ export function useBoard(boardId) {
   }, [boardId, socket]);
 
   const addCard = useCallback((columnId, content, author, imageUrl) => {
+    const tempId = `temp-${Date.now()}`;
+    const tempCard = {
+      id: tempId,
+      column_id: columnId,
+      content,
+      author,
+      image_url: imageUrl,
+      position: 9999, // push to bottom optimistically
+      reactions: [],
+      replies: []
+    };
+
+    setBoard((prev) => {
+      if (!prev) return prev;
+      return {
+        ...prev,
+        columns: prev.columns.map((col) =>
+          col.id === columnId ? { ...col, cards: [...col.cards, tempCard] } : col
+        ),
+      };
+    });
+
     socket.current?.emit('add_card', { boardId, columnId, content, author, imageUrl });
   }, [boardId, socket]);
 
