@@ -46,7 +46,7 @@ export default function HomePage() {
     s.on('board_created', onCreated);
     s.on('board_deleted', onDeleted);
     return () => { s.off('board_created', onCreated); s.off('board_deleted', onDeleted); };
-  }, [socket]);
+  }, [socket, connected]);
 
   const handleCreate = (e) => {
     e.preventDefault();
@@ -63,6 +63,7 @@ export default function HomePage() {
   };
 
   const handleDelete = (e, boardId) => {
+    e.preventDefault();
     e.stopPropagation();
     if (!window.confirm('Delete this board permanently?')) return;
     socket.current?.emit('delete_board', { boardId });
@@ -174,6 +175,7 @@ export default function HomePage() {
                     <span className="board-card-date">{formatDate(board.created_at)}</span>
                   </div>
                   <button
+                    type="button"
                     className="btn btn-icon board-delete-btn"
                     onClick={(e) => handleDelete(e, board.id)}
                     title="Delete board"

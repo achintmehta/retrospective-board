@@ -4,7 +4,7 @@ import { useSocket } from '../contexts/SocketContext';
 const SERVER_URL = import.meta.env.VITE_SERVER_URL || '';
 
 export function useBoard(boardId) {
-  const { socket } = useSocket();
+  const { socket, connected } = useSocket();
   const [board, setBoard] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -154,7 +154,7 @@ export function useBoard(boardId) {
       s.off('reaction_added', onReactionUpdated);
       s.off('reaction_updated', onReactionUpdated);
     };
-  }, [boardId, socket]);
+  }, [boardId, socket, connected]);
 
   // Actions
   const addColumn = useCallback((title) => {
