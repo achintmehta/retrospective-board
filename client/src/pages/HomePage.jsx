@@ -110,7 +110,7 @@ export default function HomePage() {
               onClick={() => setShowSettings(true)}
               title="Application Settings"
             >
-              ⚙️
+              <span className="icon-inner">⚙️</span>
             </button>
             <div className="header-divider"></div>
             <div className="header-status">
