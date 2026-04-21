@@ -109,6 +109,27 @@
   align-items: center;
 }
 
+.reply-options {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.reply-anon-toggle {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  color: var(--text-muted);
+  cursor: pointer;
+}
+
+.reply-anon-toggle input {
+  margin: 0;
+  width: 12px;
+  height: 12px;
+}
+
 .reply-image-btn {
   font-size: 14px;
   cursor: pointer;

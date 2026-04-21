@@ -49,7 +49,7 @@ export default function SettingsModal({ settings, onSave, onClose }) {
   return (
     <div className="modal-overlay">
       <div className="modal-content settings-modal">
-        <h2>App Branding Settings</h2>
+        <h2>App Logo Settings</h2>
         <form onSubmit={handleSubmit}>
           <div className="form-group">
             <label>Application Title</label>
@@ -125,7 +125,7 @@ export default function SettingsModal({ settings, onSave, onClose }) {
               Cancel
             </button>
             <button type="submit" className="btn btn-primary" disabled={uploading}>
-              Save Branding
+              Save Logo Settings
             </button>
           </div>
         </form>

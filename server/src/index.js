@@ -65,7 +65,25 @@ app.get('/api/settings', async (req, res) => {
 app.post('/api/settings', async (req, res) => {
   try {
     const updates = req.body;
+    const currentSettings = await getAppSettings();
+
     for (const [key, value] of Object.entries(updates)) {
+      // If we are updating the icon value and it's an image, clean up the old one
+      if (key === 'app_icon_value' && currentSettings.app_icon_value !== value) {
+        const oldVal = currentSettings.app_icon_value;
+        if (oldVal && oldVal.startsWith('/uploads/')) {
+          const filename = oldVal.replace('/uploads/', '');
+          const filePath = path.join(UPLOADS_DIR, filename);
+          if (fs.existsSync(filePath)) {
+            try {
+              fs.unlinkSync(filePath);
+              console.log(`Cleaned up old logo: ${filename}`);
+            } catch (err) {
+              console.error(`Failed to delete old logo file: ${filePath}`, err);
+            }
+          }
+        }
+      }
       await updateAppSetting(key, value);
     }
     const settings = await getAppSettings();

@@ -4,8 +4,10 @@ import './CardReplies.css';
 
 export default function CardReplies({ replies, cardId, onAddReply, onDeleteReply }) {
   const [content, setContent] = useState('');
+  const [isAnonymous, setIsAnonymous] = useState(false);
   const [open, setOpen] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const storedAuthor = localStorage.getItem('retro_username') || '';
 
   const handleFileChange = async (e) => {
     if (e.target.files && e.target.files[0]) {
@@ -30,7 +32,7 @@ export default function CardReplies({ replies, cardId, onAddReply, onDeleteReply
     e.preventDefault();
     if (!content.trim()) return;
 
-    const author = localStorage.getItem('retro_username') || '';
+    const author = !isAnonymous && storedAuthor ? storedAuthor : '';
     onAddReply(cardId, content.trim(), author, null);
     setContent('');
   };
@@ -75,10 +77,24 @@ export default function CardReplies({ replies, cardId, onAddReply, onDeleteReply
             autoFocus={!hasReplies}
           />
           <div className="reply-form-actions">
-            <label className="reply-image-btn" title="Attach Image">
-              {uploading ? '⏳' : '📷'}
-              <input type="file" accept="image/*" onChange={handleFileChange} hidden disabled={uploading} />
-            </label>
+            <div className="reply-options">
+              <label className="reply-image-btn" title="Attach Image">
+                {uploading ? '⏳' : '📷'}
+                <input type="file" accept="image/*" onChange={handleFileChange} hidden disabled={uploading} />
+              </label>
+
+              {storedAuthor && (
+                <label className="reply-anon-toggle">
+                  <input
+                    type="checkbox"
+                    checked={isAnonymous}
+                    onChange={(e) => setIsAnonymous(e.target.checked)}
+                  />
+                  <span>Anon</span>
+                </label>
+              )}
+            </div>
+            
             <button type="submit" disabled={!content.trim() || uploading} className="reply-submit-btn">
               Send
             </button>
