@@ -1,4 +1,4 @@
-# TeamSync Retros 🔄
+# Retrospective Board 🔄
 
 A **self-hosted, real-time retrospective board** for agile teams. Open-source, MIT-licensed, deployable locally or as a Docker image — no account required.
 
