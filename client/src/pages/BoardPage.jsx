@@ -15,10 +15,14 @@ export default function BoardPage() {
 
   const [showNamePrompt, setShowNamePrompt] = useState(false);
   const [tempName, setTempName] = useState('');
+  const [username, setUsername] = useState(localStorage.getItem('retro_username') || '');
 
   useEffect(() => {
-    if (localStorage.getItem('retro_username') === null) {
+    const stored = localStorage.getItem('retro_username');
+    if (stored === null) {
       setShowNamePrompt(true);
+    } else {
+      setUsername(stored);
     }
   }, []);
 
@@ -26,12 +30,14 @@ export default function BoardPage() {
     e.preventDefault();
     if (tempName.trim()) {
       localStorage.setItem('retro_username', tempName.trim());
+      setUsername(tempName.trim());
       setShowNamePrompt(false);
     }
   };
 
   const handleSkipName = () => {
     localStorage.setItem('retro_username', '');
+    setUsername('');
     setShowNamePrompt(false);
   };
 
@@ -117,9 +123,16 @@ export default function BoardPage() {
             </span>
           </div>
         </div>
-        <div className="header-status">
-          <span className={`connection-dot ${connected ? 'online' : ''}`} title={connected ? 'Connected' : 'Reconnecting…'} />
-          <span className="status-text">{connected ? 'Live' : 'Reconnecting…'}</span>
+        <div className="header-right">
+          <div className="user-indicator" title={username ? `Logged in as ${username}` : 'Logged in as Anonymous'}>
+            <span className="user-icon">👤</span>
+            <span className="user-label">Logged in as:</span>
+            <span className="user-name">{username || 'Anonymous'}</span>
+          </div>
+          <div className="header-status">
+            <span className={`connection-dot ${connected ? 'online' : ''}`} title={connected ? 'Connected' : 'Reconnecting…'} />
+            <span className="status-text">{connected ? 'Live' : 'Reconnecting…'}</span>
+          </div>
         </div>
       </header>
 
