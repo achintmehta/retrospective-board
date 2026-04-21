@@ -140,6 +140,23 @@ async function getBoardState(boardId) {
   return { ...board, columns: columnsWithCards };
 }
 
+// --- App Settings Handlers ---
+
+async function getAppSettings() {
+  const rows = await dbAll('SELECT key, value FROM app_settings');
+  // Convert array to key-value object
+  return rows.reduce((acc, row) => {
+    acc[row.key] = row.value;
+    return acc;
+  }, {});
+}
+
+async function updateAppSetting(key, value) {
+  // Use INSERT OR REPLACE for SQLite upsert
+  await dbRun('INSERT OR REPLACE INTO app_settings (key, value) VALUES (?, ?)', [key, value]);
+  return { key, value };
+}
+
 module.exports = {
   createBoard, deleteBoard, listBoards,
   addColumn, deleteColumn,
@@ -147,4 +164,5 @@ module.exports = {
   addReply, deleteReply,
   addReaction, removeReaction,
   getBoardState,
+  getAppSettings, updateAppSetting,
 };

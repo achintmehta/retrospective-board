@@ -14,6 +14,7 @@ const {
   addReply, deleteReply,
   addReaction, removeReaction,
   getBoardState,
+  getAppSettings, updateAppSetting,
 } = require('./boardHandlers');
 
 const app = express();
@@ -47,6 +48,28 @@ app.get('/api/boards/:boardId', async (req, res) => {
     const state = await getBoardState(req.params.boardId);
     if (!state) return res.status(404).json({ error: 'Board not found' });
     res.json(state);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.get('/api/settings', async (req, res) => {
+  try {
+    const settings = await getAppSettings();
+    res.json(settings);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.post('/api/settings', async (req, res) => {
+  try {
+    const updates = req.body;
+    for (const [key, value] of Object.entries(updates)) {
+      await updateAppSetting(key, value);
+    }
+    const settings = await getAppSettings();
+    res.json(settings);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

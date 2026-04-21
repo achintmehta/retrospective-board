@@ -86,6 +86,14 @@ db.serialize(() => {
       FOREIGN KEY (card_id) REFERENCES cards(id) ON DELETE CASCADE
     )
   `);
+
+  // app_settings table
+  db.run(`
+    CREATE TABLE IF NOT EXISTS app_settings (
+      key TEXT PRIMARY KEY,
+      value TEXT
+    )
+  `);
 });
 
 // Promisified helpers

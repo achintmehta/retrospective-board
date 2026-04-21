@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useSocket } from '../contexts/SocketContext';
+import SettingsModal from '../components/SettingsModal';
 import './HomePage.css';
 
 const SERVER_URL = import.meta.env.VITE_SERVER_URL || '';
@@ -11,12 +12,28 @@ export default function HomePage() {
   const [boards, setBoards] = useState([]);
   const [newBoardName, setNewBoardName] = useState('');
   const [creating, setCreating] = useState(false);
+  const [showSettings, setShowSettings] = useState(false);
+  const [settings, setSettings] = useState({
+    app_title: 'RetroBoard',
+    app_subtitle: 'Real-time retrospective collaboration',
+    app_icon_type: 'emoji',
+    app_icon_value: '🔄'
+  });
 
   // Load board list
   useEffect(() => {
     fetch(`${SERVER_URL}/api/boards`)
       .then((r) => r.json())
       .then(setBoards)
+      .catch(console.error);
+
+    fetch(`${SERVER_URL}/api/settings`)
+      .then((r) => r.json())
+      .then((data) => {
+        if (Object.keys(data).length > 0) {
+          setSettings((prev) => ({ ...prev, ...data }));
+        }
+      })
       .catch(console.error);
   }, []);
 
@@ -56,23 +73,61 @@ export default function HomePage() {
     return d.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
   };
 
+  const handleSaveSettings = async (newSettings) => {
+    try {
+      const res = await fetch(`${SERVER_URL}/api/settings`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(newSettings),
+      });
+      const data = await res.json();
+      setSettings(data);
+      setShowSettings(false);
+    } catch (err) {
+      console.error('Failed to save settings:', err);
+      alert('Error saving settings.');
+    }
+  };
+
   return (
     <div className="home-page">
       <header className="home-header">
         <div className="home-header-inner">
           <div className="home-logo">
-            <span className="logo-icon">🔄</span>
+            {settings.app_icon_type === 'emoji' ? (
+              <span className="logo-icon">{settings.app_icon_value}</span>
+            ) : (
+              <img src={`${SERVER_URL}${settings.app_icon_value}`} alt="Logo" className="logo-img" />
+            )}
             <div>
-              <h1 className="logo-title">RetroBoard</h1>
-              <p className="logo-sub">Real-time retrospective collaboration</p>
+              <h1 className="logo-title">{settings.app_title}</h1>
+              <p className="logo-sub">{settings.app_subtitle}</p>
             </div>
           </div>
-          <div className="header-status">
-            <span className={`connection-dot ${connected ? 'online' : ''}`} />
-            <span className="status-text">{connected ? 'Live' : 'Connecting…'}</span>
+          <div className="header-actions">
+            <button 
+              className="btn btn-ghost settings-btn" 
+              onClick={() => setShowSettings(true)}
+              title="Application Settings"
+            >
+              ⚙️
+            </button>
+            <div className="header-divider"></div>
+            <div className="header-status">
+              <span className={`connection-dot ${connected ? 'online' : ''}`} />
+              <span className="status-text">{connected ? 'Live' : 'Connecting…'}</span>
+            </div>
           </div>
         </div>
       </header>
+
+      {showSettings && (
+        <SettingsModal 
+          settings={settings} 
+          onSave={handleSaveSettings} 
+          onClose={() => setShowSettings(false)} 
+        />
+      )}
 
       <main className="home-main">
         <section className="create-section">
