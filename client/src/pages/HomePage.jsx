@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
 import { useSocket } from '../contexts/SocketContext';
 import SettingsModal from '../components/SettingsModal';
 import './HomePage.css';
@@ -10,7 +11,10 @@ export default function HomePage() {
   const { socket, connected } = useSocket();
   const navigate = useNavigate();
   const [boards, setBoards] = useState([]);
+  const [groups, setGroups] = useState([]);
+  const [collapsedGroups, setCollapsedGroups] = useState(new Set());
   const [newBoardName, setNewBoardName] = useState('');
+  const [newGroupName, setNewGroupName] = useState('');
   const [creating, setCreating] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [settings, setSettings] = useState({
@@ -25,6 +29,11 @@ export default function HomePage() {
     fetch(`${SERVER_URL}/api/boards`)
       .then((r) => r.json())
       .then(setBoards)
+      .catch(console.error);
+
+    fetch(`${SERVER_URL}/api/groups`)
+      .then((r) => r.json())
+      .then(setGroups)
       .catch(console.error);
 
     fetch(`${SERVER_URL}/api/settings`)
@@ -43,9 +52,31 @@ export default function HomePage() {
     const s = socket.current;
     const onCreated = (board) => setBoards((prev) => [board, ...prev]);
     const onDeleted = ({ boardId }) => setBoards((prev) => prev.filter((b) => b.id !== boardId));
+    
+    const onGroupCreated = (group) => setGroups((prev) => [...prev, group]);
+    const onGroupDeleted = ({ groupId }) => {
+      setGroups((prev) => prev.filter((g) => g.id !== groupId));
+      // Boards belonging to this group will now have NULL group_id on server.
+      // We should update our local state too.
+      setBoards((prev) => prev.map(b => b.group_id === groupId ? { ...b, group_id: null } : b));
+    };
+    const onBoardMoved = ({ boardId, groupId }) => {
+      setBoards((prev) => prev.map(b => b.id === boardId ? { ...b, group_id: groupId } : b));
+    };
+
     s.on('board_created', onCreated);
     s.on('board_deleted', onDeleted);
-    return () => { s.off('board_created', onCreated); s.off('board_deleted', onDeleted); };
+    s.on('group_created', onGroupCreated);
+    s.on('group_deleted', onGroupDeleted);
+    s.on('board_moved_to_group', onBoardMoved);
+
+    return () => {
+      s.off('board_created', onCreated);
+      s.off('board_deleted', onDeleted);
+      s.off('group_created', onGroupCreated);
+      s.off('group_deleted', onGroupDeleted);
+      s.off('board_moved_to_group', onBoardMoved);
+    };
   }, [socket, connected]);
 
   const handleCreate = (e) => {
@@ -67,6 +98,50 @@ export default function HomePage() {
     e.stopPropagation();
     if (!window.confirm('Delete this board permanently?')) return;
     socket.current?.emit('delete_board', { boardId });
+  };
+
+  const handleCreateGroup = (e) => {
+    e.preventDefault();
+    const name = newGroupName.trim();
+    if (!name || !socket.current) return;
+    socket.current.emit('create_group', { name }, ({ ok }) => {
+      if (ok) setNewGroupName('');
+    });
+  };
+
+  const handleDeleteGroup = (groupId) => {
+    if (!window.confirm('Delete this group? Boards inside will be preserved and moved to the "General" section.')) return;
+    socket.current?.emit('delete_group', { groupId });
+  };
+
+  const handleRemoveFromGroup = (e, boardId) => {
+    e.preventDefault();
+    e.stopPropagation();
+    socket.current?.emit('move_board_to_group', { boardId, groupId: null });
+  };
+
+  const toggleGroupCollapse = (groupId) => {
+    setCollapsedGroups((prev) => {
+      const next = new Set(prev);
+      if (next.has(groupId)) next.delete(groupId);
+      else next.add(groupId);
+      return next;
+    });
+  };
+
+  const onDragEnd = (result) => {
+    const { draggableId, destination, source } = result;
+    if (!destination) return;
+    if (destination.droppableId === source.droppableId) return;
+
+    const boardId = draggableId;
+    const toGroupId = destination.droppableId === 'ungrouped' ? null : destination.droppableId.replace('group-', '');
+
+    // Optimistic UI update
+    setBoards((prev) => prev.map(b => b.id === boardId ? { ...b, group_id: toGroupId } : b));
+
+    // Emit to server
+    socket.current?.emit('move_board_to_group', { boardId, groupId: toGroupId });
   };
 
   const formatDate = (iso) => {
@@ -132,63 +207,184 @@ export default function HomePage() {
 
       <main className="home-main">
         <section className="create-section">
-          <h2 className="section-title">Create a Board</h2>
-          <form className="create-form" onSubmit={handleCreate}>
-            <input
-              id="board-name-input"
-              type="text"
-              placeholder="Sprint 42 Retrospective…"
-              value={newBoardName}
-              onChange={(e) => setNewBoardName(e.target.value)}
-              autoFocus
-            />
-            <button id="create-board-btn" type="submit" className="btn btn-primary" disabled={creating}>
-              {creating ? 'Creating…' : '+ New Board'}
-            </button>
-          </form>
+          <div className="create-grid">
+            <div className="create-box">
+              <h2 className="section-title">New Board</h2>
+              <form className="create-form" onSubmit={handleCreate}>
+                <input
+                  type="text"
+                  placeholder="Sprint 42 Retrospective…"
+                  value={newBoardName}
+                  onChange={(e) => setNewBoardName(e.target.value)}
+                />
+                <button type="submit" className="btn btn-primary" disabled={creating}>
+                  {creating ? 'Creating…' : '+ Board'}
+                </button>
+              </form>
+            </div>
+            <div className="create-box">
+              <h2 className="section-title">New Group</h2>
+              <form className="create-form" onSubmit={handleCreateGroup}>
+                <input
+                  type="text"
+                  placeholder="Design Team, Project Oasis…"
+                  value={newGroupName}
+                  onChange={(e) => setNewGroupName(e.target.value)}
+                />
+                <button type="submit" className="btn btn-secondary">
+                  + Group
+                </button>
+              </form>
+            </div>
+          </div>
         </section>
 
-        <section className="boards-section">
-          <h2 className="section-title">
-            All Boards
-            <span className="badge badge-count">{boards.length}</span>
-          </h2>
-          {boards.length === 0 ? (
-            <div className="empty-state">
-              <div className="empty-icon">📋</div>
-              <p>No boards yet. Create your first retrospective board above.</p>
-            </div>
-          ) : (
-            <ul className="boards-grid">
-              {boards.map((board) => (
-                <li
-                  key={board.id}
-                  className="board-card"
-                  onClick={() => navigate(`/board/${board.id}`)}
-                  role="button"
-                  tabIndex={0}
-                  onKeyDown={(e) => e.key === 'Enter' && navigate(`/board/${board.id}`)}
-                >
-                  <div className="board-card-icon">📋</div>
-                  <div className="board-card-info">
-                    <span className="board-card-name">{board.name}</span>
-                    <span className="board-card-date">{formatDate(board.created_at)}</span>
+        <div className="dashboard-content">
+          <DragDropContext onDragEnd={onDragEnd}>
+            {groups.map((group) => {
+              const groupBoards = boards.filter((b) => b.group_id === group.id);
+              const isCollapsed = collapsedGroups.has(group.id);
+              return (
+                <section key={group.id} className={`boards-section group-section ${isCollapsed ? 'collapsed' : ''}`}>
+                  <div className="group-header" onClick={() => toggleGroupCollapse(group.id)} style={{ cursor: 'pointer' }}>
+                    <h2 className="section-title">
+                      <span className={`collapse-chevron ${isCollapsed ? '' : 'expanded'}`}>▶</span>
+                      <span className="group-icon">📁</span>
+                      {group.name}
+                      <span className="badge badge-count">{groupBoards.length}</span>
+                    </h2>
+                    <button 
+                      className="btn btn-ghost btn-sm group-delete-btn" 
+                      onClick={(e) => { e.stopPropagation(); handleDeleteGroup(group.id); }}
+                      title="Delete group"
+                    >
+                      Remove Group
+                    </button>
                   </div>
-                  <button
-                    type="button"
-                    className="btn btn-icon board-delete-btn"
-                    onClick={(e) => handleDelete(e, board.id)}
-                    title="Delete board"
-                    aria-label="Delete board"
+                  
+                  {!isCollapsed && (
+                    <Droppable droppableId={`group-${group.id}`} direction="horizontal">
+                      {(provided, snapshot) => (
+                        <div 
+                          ref={provided.innerRef} 
+                          {...provided.droppableProps}
+                          className={`boards-grid ${snapshot.isDraggingOver ? 'dragging-over' : ''}`}
+                          style={{ minHeight: groupBoards.length === 0 ? '100px' : 'auto' }}
+                        >
+                          {groupBoards.length === 0 && !snapshot.isDraggingOver && (
+                            <div className="empty-state mini">
+                              <p>No boards here. Drag a board into this group.</p>
+                            </div>
+                          )}
+                          {groupBoards.map((board, index) => (
+                            <BoardCard 
+                              key={board.id} 
+                              board={board} 
+                              index={index}
+                              onDelete={handleDelete} 
+                              onRemoveFromGroup={handleRemoveFromGroup}
+                              formatDate={formatDate}
+                              navigate={navigate}
+                            />
+                          ))}
+                          {provided.placeholder}
+                        </div>
+                      )}
+                    </Droppable>
+                  )}
+                </section>
+              );
+            })}
+
+            <section className="boards-section ungrouped-section">
+              <h2 className="section-title">
+                {groups.length > 0 ? 'General Boards' : 'All Boards'}
+                <span className="badge badge-count">
+                  {boards.filter((b) => !b.group_id).length}
+                </span>
+              </h2>
+              
+              <Droppable droppableId="ungrouped" direction="horizontal">
+                {(provided, snapshot) => (
+                  <div 
+                    ref={provided.innerRef} 
+                    {...provided.droppableProps}
+                    className={`boards-grid ${snapshot.isDraggingOver ? 'dragging-over' : ''}`}
+                    style={{ minHeight: boards.filter((b) => !b.group_id).length === 0 ? '100px' : 'auto' }}
                   >
-                    🗑
-                  </button>
-                </li>
-              ))}
-            </ul>
-          )}
-        </section>
+                    {boards.filter((b) => !b.group_id).length === 0 && !snapshot.isDraggingOver && (
+                      <div className="empty-state">
+                        <div className="empty-icon">📋</div>
+                        <p>No boards yet. Create your first retrospective board above.</p>
+                      </div>
+                    )}
+                    {boards
+                      .filter((b) => !b.group_id)
+                      .map((board, index) => (
+                        <BoardCard 
+                          key={board.id} 
+                          board={board} 
+                          index={index}
+                          onDelete={handleDelete} 
+                          formatDate={formatDate}
+                          navigate={navigate}
+                        />
+                      ))}
+                    {provided.placeholder}
+                  </div>
+                )}
+              </Droppable>
+            </section>
+          </DragDropContext>
+        </div>
       </main>
     </div>
+  );
+}
+
+function BoardCard({ board, index, onDelete, onRemoveFromGroup, formatDate, navigate }) {
+  return (
+    <Draggable draggableId={board.id} index={index}>
+      {(provided, snapshot) => (
+        <li
+          ref={provided.innerRef}
+          {...provided.draggableProps}
+          {...provided.dragHandleProps}
+          className={`board-card ${snapshot.isDragging ? 'is-dragging' : ''}`}
+          onClick={() => !snapshot.isDragging && navigate(`/board/${board.id}`)}
+          role="button"
+          tabIndex={0}
+          onKeyDown={(e) => e.key === 'Enter' && navigate(`/board/${board.id}`)}
+        >
+          <div className="board-card-icon">📋</div>
+          <div className="board-card-info">
+            <span className="board-card-name">{board.name}</span>
+            <span className="board-card-date">{formatDate(board.created_at)}</span>
+          </div>
+          <div className="board-card-actions">
+            {onRemoveFromGroup && (
+              <button
+                type="button"
+                className="btn btn-icon board-remove-group-btn"
+                onClick={(e) => onRemoveFromGroup(e, board.id)}
+                title="Move out of group"
+                aria-label="Move out of group"
+              >
+                📂
+              </button>
+            )}
+            <button
+              type="button"
+              className="btn btn-icon board-delete-btn"
+              onClick={(e) => onDelete(e, board.id)}
+              title="Delete board"
+              aria-label="Delete board"
+            >
+              🗑
+            </button>
+          </div>
+        </li>
+      )}
+    </Draggable>
   );
 }

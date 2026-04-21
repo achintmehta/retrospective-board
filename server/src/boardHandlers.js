@@ -24,6 +24,29 @@ async function listBoards() {
   return dbAll('SELECT * FROM boards ORDER BY created_at DESC');
 }
 
+// --- Board Group Handlers ---
+
+async function createBoardGroup(name) {
+  const id = uuidv4();
+  await dbRun('INSERT INTO board_groups (id, name) VALUES (?, ?)', [id, name]);
+  return dbGet('SELECT * FROM board_groups WHERE id = ?', [id]);
+}
+
+async function deleteBoardGroup(groupId) {
+  // Dissociate boards first (handled by ON DELETE SET NULL in migration but good to be explicit/safe)
+  await dbRun('UPDATE boards SET group_id = NULL WHERE group_id = ?', [groupId]);
+  await dbRun('DELETE FROM board_groups WHERE id = ?', [groupId]);
+}
+
+async function listBoardGroups() {
+  return dbAll('SELECT * FROM board_groups ORDER BY position ASC, name ASC');
+}
+
+async function moveBoardToGroup(boardId, groupId) {
+  await dbRun('UPDATE boards SET group_id = ? WHERE id = ?', [groupId, boardId]);
+  return dbGet('SELECT * FROM boards WHERE id = ?', [boardId]);
+}
+
 // --- Column Handlers ---
 
 async function addColumn(boardId, title) {
@@ -165,4 +188,5 @@ module.exports = {
   addReaction, removeReaction,
   getBoardState,
   getAppSettings, updateAppSetting,
+  createBoardGroup, deleteBoardGroup, listBoardGroups, moveBoardToGroup,
 };

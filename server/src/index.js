@@ -15,6 +15,7 @@ const {
   addReaction, removeReaction,
   getBoardState,
   getAppSettings, updateAppSetting,
+  createBoardGroup, deleteBoardGroup, listBoardGroups, moveBoardToGroup,
 } = require('./boardHandlers');
 
 const app = express();
@@ -38,6 +39,15 @@ app.get('/api/boards', async (req, res) => {
   try {
     const boards = await listBoards();
     res.json(boards);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.get('/api/groups', async (req, res) => {
+  try {
+    const groups = await listBoardGroups();
+    res.json(groups);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -161,6 +171,38 @@ io.on('connection', (socket) => {
       await deleteBoard(boardId);
       io.emit('board_deleted', { boardId });
       callback?.({ ok: true });
+    } catch (err) {
+      callback?.({ ok: false, error: err.message });
+    }
+  });
+
+  // ── Groups ──────────────────────────────────────────────────────────────────
+
+  socket.on('create_group', async ({ name }, callback) => {
+    try {
+      const group = await createBoardGroup(name);
+      io.emit('group_created', group);
+      callback?.({ ok: true, group });
+    } catch (err) {
+      callback?.({ ok: false, error: err.message });
+    }
+  });
+
+  socket.on('delete_group', async ({ groupId }, callback) => {
+    try {
+      await deleteBoardGroup(groupId);
+      io.emit('group_deleted', { groupId });
+      callback?.({ ok: true });
+    } catch (err) {
+      callback?.({ ok: false, error: err.message });
+    }
+  });
+
+  socket.on('move_board_to_group', async ({ boardId, groupId }, callback) => {
+    try {
+      const board = await moveBoardToGroup(boardId, groupId);
+      io.emit('board_moved_to_group', { boardId, groupId });
+      callback?.({ ok: true, board });
     } catch (err) {
       callback?.({ ok: false, error: err.message });
     }

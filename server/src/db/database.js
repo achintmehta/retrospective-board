@@ -94,6 +94,22 @@ db.serialize(() => {
       value TEXT
     )
   `);
+
+  // board_groups table
+  db.run(`
+    CREATE TABLE IF NOT EXISTS board_groups (
+      id TEXT PRIMARY KEY,
+      name TEXT NOT NULL,
+      position INTEGER NOT NULL DEFAULT 0
+    )
+  `);
+
+  // Add group_id to boards table
+  db.all("PRAGMA table_info(boards);", (err, rows) => {
+    if (!err && rows && !rows.some((r) => r.name === 'group_id')) {
+      db.run("ALTER TABLE boards ADD COLUMN group_id TEXT REFERENCES board_groups(id) ON DELETE SET NULL;");
+    }
+  });
 });
 
 // Promisified helpers
