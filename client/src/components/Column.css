@@ -1,0 +1,79 @@
+.column {
+  background: var(--bg-column);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  padding: 16px;
+  width: 300px;
+  min-width: 300px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-height: calc(100vh - 120px);
+  animation: fadeIn 0.2s ease;
+}
+@keyframes fadeIn {
+  from { opacity: 0; transform: scale(0.97); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+.column-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--border-color);
+}
+.column-header-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.column-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-primary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.column-delete-btn {
+  font-size: 18px;
+  line-height: 1;
+  padding: 4px 6px;
+  border-radius: var(--radius-sm);
+  border: none;
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+  opacity: 0;
+  transition: all 0.15s;
+}
+.column:hover .column-delete-btn { opacity: 1; }
+.column-delete-btn:hover {
+  color: var(--accent-danger);
+  background: rgba(255,77,109,0.1);
+}
+.column-delete-btn.confirm {
+  opacity: 1;
+  color: var(--accent-danger) !important;
+  background: rgba(255,77,109,0.15);
+  animation: pulse 0.4s ease;
+}
+
+.column-cards {
+  flex: 1;
+  overflow-y: auto;
+  min-height: 60px;
+  border-radius: var(--radius-sm);
+  padding: 2px;
+  transition: background 0.15s;
+}
+.column-cards--over {
+  background: rgba(108,99,255,0.06);
+  border-radius: var(--radius-md);
+}
+
+@keyframes pulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.15); }
+  100% { transform: scale(1); }
+}

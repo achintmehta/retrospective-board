@@ -1,0 +1,137 @@
+.card-replies-container {
+  margin-top: 12px;
+  border-top: 1px solid var(--border-color);
+  padding-top: 8px;
+}
+
+.open-replies-btn {
+  background: transparent;
+  border: none;
+  font-size: 11px;
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 4px;
+  border-radius: var(--radius-sm);
+}
+
+.open-replies-btn:hover {
+  background: var(--bg-hover);
+  color: var(--text-primary);
+}
+
+.replies-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.reply-item {
+  background: var(--bg-hover);
+  padding: 8px;
+  border-radius: var(--radius-sm);
+  font-size: 12px;
+}
+
+.reply-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 4px;
+}
+
+.reply-author {
+  font-weight: 600;
+  color: var(--text-muted);
+  font-size: 10px;
+  text-transform: uppercase;
+}
+
+.reply-delete {
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  font-size: 10px;
+  cursor: pointer;
+  padding: 2px 4px;
+  opacity: 0;
+  transition: opacity 0.15s;
+}
+
+.reply-item:hover .reply-delete {
+  opacity: 1;
+}
+
+.reply-delete:hover {
+  color: var(--accent-danger);
+}
+
+.reply-content {
+  margin: 0;
+  color: var(--text-primary);
+  line-height: 1.4;
+  word-break: break-word;
+}
+
+.reply-image {
+  margin-top: 6px;
+  max-width: 100%;
+  max-height: 120px;
+  border-radius: 4px;
+  display: block;
+}
+
+.reply-form {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.reply-form input[type="text"] {
+  width: 100%;
+  border: 1px solid var(--border-color);
+  background: var(--bg-hover);
+  color: var(--text-primary);
+  border-radius: var(--radius-sm);
+  padding: 6px 8px;
+  font-size: 12px;
+  outline: none;
+}
+
+.reply-form input[type="text"]:focus {
+  border-color: var(--accent);
+}
+
+.reply-form-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.reply-image-btn {
+  font-size: 14px;
+  cursor: pointer;
+  padding: 2px 4px;
+  border-radius: var(--radius-sm);
+  opacity: 0.7;
+}
+
+.reply-image-btn:hover {
+  opacity: 1;
+  background: var(--bg-hover);
+}
+
+.reply-submit-btn {
+  font-size: 11px;
+  background: var(--accent);
+  color: white;
+  border: none;
+  border-radius: var(--radius-sm);
+  padding: 4px 8px;
+  cursor: pointer;
+}
+
+.reply-submit-btn:disabled {
+  opacity: 0.5;
+  cursor: default;
+}

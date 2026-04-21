@@ -1,0 +1,52 @@
+.add-column-trigger {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  width: 180px;
+  min-width: 180px;
+  height: 120px;
+  background: transparent;
+  border: 2px dashed var(--border-color);
+  border-radius: var(--radius-lg);
+  color: var(--text-muted);
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  align-self: flex-start;
+}
+.add-column-trigger span:first-child {
+  font-size: 24px;
+  font-weight: 300;
+}
+.add-column-trigger:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: rgba(108,99,255,0.05);
+  transform: scale(1.02);
+}
+
+.add-column-form {
+  width: 260px;
+  min-width: 260px;
+  background: var(--bg-column);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  align-self: flex-start;
+  animation: fadeIn 0.15s ease;
+}
+.add-column-form-actions {
+  display: flex;
+  gap: 8px;
+}
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-4px); }
+  to { opacity: 1; transform: translateY(0); }
+}

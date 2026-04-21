@@ -1,0 +1,16 @@
+version: '3.9'
+
+services:
+  retro-board:
+    build: .
+    ports:
+      - "3001:3001"
+    volumes:
+      - retro-data:/app/data
+    environment:
+      - NODE_ENV=production
+      - PORT=3001
+    restart: unless-stopped
+
+volumes:
+  retro-data:

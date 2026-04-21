@@ -1,0 +1,22 @@
+{
+  "name": "retro-board-server",
+  "version": "1.0.0",
+  "description": "Real-time retrospective board backend",
+  "license": "MIT",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "node src/index.js",
+    "dev": "nodemon src/index.js"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^4.18.3",
+    "multer": "^2.1.1",
+    "socket.io": "^4.7.4",
+    "sqlite3": "^5.1.7",
+    "uuid": "^9.0.1"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.0"
+  }
+}
