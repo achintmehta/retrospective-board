@@ -1,37 +1,38 @@
 import { useState } from 'react';
+import { renderTextWithImages } from '../utils/textParser';
 import './CardReplies.css';
 
 export default function CardReplies({ replies, cardId, onAddReply, onDeleteReply }) {
   const [content, setContent] = useState('');
   const [open, setOpen] = useState(false);
-  const [file, setFile] = useState(null);
   const [uploading, setUploading] = useState(false);
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    if (!content.trim() && !file) return;
-
-    const author = localStorage.getItem('retro_username') || '';
-    let imageUrl = null;
-
-    if (file) {
+  const handleFileChange = async (e) => {
+    if (e.target.files && e.target.files[0]) {
+      const selectedFile = e.target.files[0];
       setUploading(true);
       const formData = new FormData();
-      formData.append('image', file);
+      formData.append('image', selectedFile);
       try {
         const SERVER_URL = import.meta.env.VITE_SERVER_URL || '';
         const r = await fetch(`${SERVER_URL}/api/upload`, { method: 'POST', body: formData });
         if (r.ok) {
           const data = await r.json();
-          imageUrl = data.url;
+          setContent(prev => prev + (prev ? ' ' : '') + `[Image: ${data.url}] `);
         }
       } catch (err) {}
       setUploading(false);
+      e.target.value = null;
     }
+  };
 
-    onAddReply(cardId, content.trim(), author, imageUrl);
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!content.trim()) return;
+
+    const author = localStorage.getItem('retro_username') || '';
+    onAddReply(cardId, content.trim(), author, null);
     setContent('');
-    setFile(null);
   };
 
   const hasReplies = replies && replies.length > 0;
@@ -54,7 +55,7 @@ export default function CardReplies({ replies, cardId, onAddReply, onDeleteReply
                 <span className="reply-author">{r.author || 'Anonymous'}</span>
                 <button onClick={() => onDeleteReply(cardId, r.id)} className="reply-delete" title="Delete reply">✕</button>
               </div>
-              {r.content && <p className="reply-content">{r.content}</p>}
+              <div className="reply-content">{renderTextWithImages(r.content)}</div>
               {r.image_url && (
                 <img src={`${import.meta.env.VITE_SERVER_URL || ''}${r.image_url}`} alt="reply attach" className="reply-image" />
               )}
@@ -67,7 +68,7 @@ export default function CardReplies({ replies, cardId, onAddReply, onDeleteReply
         <form className="reply-form" onSubmit={handleSubmit}>
           <input 
             type="text" 
-            placeholder={file ? `Attached: ${file.name}` : "Write a reply..."}
+            placeholder={"Write a reply..."}
             value={content} 
             onChange={e => setContent(e.target.value)}
             disabled={uploading}
@@ -75,11 +76,11 @@ export default function CardReplies({ replies, cardId, onAddReply, onDeleteReply
           />
           <div className="reply-form-actions">
             <label className="reply-image-btn" title="Attach Image">
-              📷
-              <input type="file" accept="image/*" onChange={e => setFile(e.target.files?.[0])} hidden />
+              {uploading ? '⏳' : '📷'}
+              <input type="file" accept="image/*" onChange={handleFileChange} hidden disabled={uploading} />
             </label>
-            <button type="submit" disabled={uploading || (!content.trim() && !file)} className="reply-submit-btn">
-              {uploading ? '...' : (file && !content.trim() ? 'Upload' : 'Send')}
+            <button type="submit" disabled={!content.trim() || uploading} className="reply-submit-btn">
+              Send
             </button>
           </div>
         </form>

@@ -24,7 +24,14 @@
   line-height: 1.55;
   color: var(--text-primary);
   word-break: break-word;
+  white-space: pre-wrap;
   margin-bottom: 10px;
+}
+.inline-markdown-image {
+  max-width: 100%;
+  border-radius: var(--radius-sm);
+  display: block;
+  margin: 6px 0;
 }
 .card-image-wrap {
   margin-bottom: 10px;

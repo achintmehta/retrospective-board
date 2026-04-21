@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Draggable } from '@hello-pangea/dnd';
 import ReactionPicker from './ReactionPicker';
 import CardReplies from './CardReplies';
+import { renderTextWithImages } from '../utils/textParser';
 import './Card.css';
 
 export default function Card({ card, index, onDelete, onToggleReaction, onAddReply, onDeleteReply }) {
@@ -22,7 +23,7 @@ export default function Card({ card, index, onDelete, onToggleReaction, onAddRep
           {...provided.draggableProps}
           {...provided.dragHandleProps}
         >
-          <p className="card-content">{card.content}</p>
+          <div className="card-content">{renderTextWithImages(card.content)}</div>
           {card.image_url && (
             <div className="card-image-wrap">
               <img 

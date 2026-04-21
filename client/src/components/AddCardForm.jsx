@@ -7,7 +7,6 @@ export default function AddCardForm({ onAdd }) {
   const [isAnonymous, setIsAnonymous] = useState(false);
   const [storedAuthor, setStoredAuthor] = useState('');
 
-  const [file, setFile] = useState(null);
   const [uploading, setUploading] = useState(false);
 
   useEffect(() => {
@@ -16,36 +15,38 @@ export default function AddCardForm({ onAdd }) {
     }
   }, [open]);
 
+  const handleFileChange = async (e) => {
+    if (e.target.files && e.target.files[0]) {
+      const selectedFile = e.target.files[0];
+      setUploading(true);
+      const formData = new FormData();
+      formData.append('image', selectedFile);
+      try {
+        const SERVER_URL = import.meta.env.VITE_SERVER_URL || '';
+        const r = await fetch(`${SERVER_URL}/api/upload`, { method: 'POST', body: formData });
+        if (r.ok) {
+          const data = await r.json();
+          setContent(prev => prev + (prev ? '\n' : '') + `[Image: ${data.url}]\n`);
+        }
+      } catch (err) {
+        console.error('Image upload failed', err);
+      }
+      setUploading(false);
+      e.target.value = null;
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!content.trim() && !file) return;
+    if (!content.trim()) return;
     
     let authorName = '';
     if (!isAnonymous && storedAuthor) {
       authorName = storedAuthor;
     }
     
-    let imageUrl = null;
-    if (file) {
-      setUploading(true);
-      const formData = new FormData();
-      formData.append('image', file);
-      try {
-        const SERVER_URL = import.meta.env.VITE_SERVER_URL || '';
-        const r = await fetch(`${SERVER_URL}/api/upload`, { method: 'POST', body: formData });
-        if (r.ok) {
-          const data = await r.json();
-          imageUrl = data.url;
-        }
-      } catch (err) {
-        console.error('Image upload failed', err);
-      }
-      setUploading(false);
-    }
-    
-    onAdd(content.trim(), authorName, imageUrl);
+    onAdd(content.trim(), authorName, null);
     setContent('');
-    setFile(null);
     setOpen(false);
   };
 
@@ -70,8 +71,8 @@ export default function AddCardForm({ onAdd }) {
       
       <div className="form-extras">
         <label className="image-upload-btn">
-          <span>📷 {file ? file.name : 'Attach Image'}</span>
-          <input type="file" accept="image/*" onChange={(e) => setFile(e.target.files?.[0] || null)} hidden />
+          <span>{uploading ? 'Uploading...' : '📷 Attach Image'}</span>
+          <input type="file" accept="image/*" onChange={handleFileChange} hidden disabled={uploading} />
         </label>
         
         {storedAuthor && (
@@ -89,10 +90,10 @@ export default function AddCardForm({ onAdd }) {
       </div>
 
       <div className="add-card-form-actions">
-        <button type="submit" className="btn btn-primary" disabled={(!content.trim() && !file) || uploading}>
-          {uploading ? 'Uploading...' : 'Add Card'}
+        <button type="submit" className="btn btn-primary" disabled={!content.trim() || uploading}>
+          Add Card
         </button>
-        <button type="button" className="btn btn-ghost" onClick={() => { setOpen(false); setContent(''); setFile(null); }}>
+        <button type="button" className="btn btn-ghost" onClick={() => { setOpen(false); setContent(''); }}>
           Cancel
         </button>
       </div>
