@@ -1,8 +1,8 @@
 ## ADDED Requirements
 
-### Requirement: Parse Inline Images in Cards
-The system SHALL parse standard markdown image syntax (`![alt text](url)`) natively within the Card's text content.
+### Requirement: Parse Inline Image Tokens in Cards
+The system SHALL parse inline image tokens (`[Image: url]`) natively within the Card's text content.
 
-#### Scenario: Card content features an inline image
-- **WHEN** user provides card textual content containing markdown image syntax
-- **THEN** the text string visually renders an `<img>` element instead of raw syntax, displaying the image
+#### Scenario: Card content features an inline image token
+- **WHEN** user provides card textual content containing an auto-uploaded image token
+- **THEN** the text string visually renders an `<img>` element instead of the text token, displaying the image

@@ -1,25 +1,24 @@
 ## Context
 
-We previously built support for file attachments which append onto Retro Board Cards and Replies as an `<img>` tag at the bottom via a structured `image_url` property. The team now requires standard inline-image parsing (`![alt](url)`) integrated natively into the text so users can embed external or internal images precisely where they want them within their paragraphs.
+We previously built support for generic file attachments which appeared appendaged onto Retro Board Cards and Replies as an `<img>` tag at the bottom. We are transitioning to an auto-insertion token system to seamlessly embed inline images natively into the text content.
 
 ## Goals / Non-Goals
 
 **Goals:**
-- Provide client-side parsing of markdown image syntax within the `content` string.
-- Render embedded images visually aligned without breaking card bounds.
+- Auto-upload selected images immediately and append `[Image: URL]` to the message string.
+- Provide client-side parsing of `[Image: ...]` syntax within the text field.
+- Render embedded images visually aligned.
 
 **Non-Goals:**
-- Full Markdown support (tables, headers, complex syntax highlighting).
-- Server-side downloading or proxying of embedded external URLs.
+- Supporting generic markdown syntax.
+- Blocking the UI waiting for generic markdown support libraries.
 
 ## Decisions
 
-- **Rendering Strategy**: We will implement a lightweight regex-based URL parse-and-replace hook inside `Card` and `CardReplies` instead of importing heavy markdown libraries (like `react-markdown`), keeping the client bundle tiny since we only want image parsing.
-- **Parser Implementation**: A React helper function `renderTextWithImages(text)` will split the text via regex `(!\[.*?\]\(.*?\))` and dynamically return an array of React Nodes (Strings and `<img />` components).
+- **Rendering Strategy**: Implement a lightweight regex loop based on `\[Image: (.*?)\]` hook inside `Card` and `CardReplies`.
+- **Parsing Logic**: A helper function `renderTextWithImages(text)` splices `[Image... ]` blocks out into React Fragments containing `<img>` tags natively inline!
 
 ## Risks / Trade-offs
 
-- **Risk**: Large inline images breaking layout width on narrow columns.
-  - **Mitigation**: Expand `.card-image` styled rules implicitly covering any inline `img` embedded in the text block to have `max-width: 100%` and `object-fit: cover`.
-- **Risk**: Performance impact of regex evaluation on rendering multiple cards.
-  - **Mitigation**: RegExp regex split operations are highly optimized. We will memoize or evaluate during render which takes less than 1ms per typical board.
+- **Risk**: Creating orphaned server images if auto-upload completes but user abandons the form.
+  - **Mitigation**: Simple cleanup script run periodically on the server or accepted as standard artifact bloat for self-hosted utility.
