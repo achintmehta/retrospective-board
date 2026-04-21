@@ -1,6 +1,5 @@
 node_modules/
 .DS_Store
-server/data/
 dist/
 dist-ssr/
 *.local
@@ -9,4 +8,7 @@ yarn-debug.log*
 yarn-error.log*
 .env
 
-data/
+data/*
+!data/.gitkeep
+data/uploads/*
+!data/uploads/.gitkeep
