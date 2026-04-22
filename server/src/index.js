@@ -97,6 +97,7 @@ app.post('/api/settings', async (req, res) => {
       await updateAppSetting(key, value);
     }
     const settings = await getAppSettings();
+    io.emit('settings_updated', settings);
     res.json(settings);
   } catch (err) {
     res.status(500).json({ error: err.message });

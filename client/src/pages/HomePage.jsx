@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
 import { useSocket } from '../contexts/SocketContext';
+import { useSettings } from '../contexts/SettingsContext';
 import SettingsModal from '../components/SettingsModal';
 import './HomePage.css';
 
@@ -17,12 +18,7 @@ export default function HomePage() {
   const [newGroupName, setNewGroupName] = useState('');
   const [creating, setCreating] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
-  const [settings, setSettings] = useState({
-    app_title: 'RetroBoard',
-    app_subtitle: 'Real-time retrospective collaboration',
-    app_icon_type: 'emoji',
-    app_icon_value: '🔄'
-  });
+  const { settings, updateSettings } = useSettings();
 
   // Load board list
   useEffect(() => {
@@ -34,15 +30,6 @@ export default function HomePage() {
     fetch(`${SERVER_URL}/api/groups`)
       .then((r) => r.json())
       .then(setGroups)
-      .catch(console.error);
-
-    fetch(`${SERVER_URL}/api/settings`)
-      .then((r) => r.json())
-      .then((data) => {
-        if (Object.keys(data).length > 0) {
-          setSettings((prev) => ({ ...prev, ...data }));
-        }
-      })
       .catch(console.error);
   }, []);
 
@@ -63,12 +50,16 @@ export default function HomePage() {
     const onBoardMoved = ({ boardId, groupId }) => {
       setBoards((prev) => prev.map(b => b.id === boardId ? { ...b, group_id: groupId } : b));
     };
+    const onSettingsUpdated = (newSettings) => {
+      setSettings((prev) => ({ ...prev, ...newSettings }));
+    };
 
     s.on('board_created', onCreated);
     s.on('board_deleted', onDeleted);
     s.on('group_created', onGroupCreated);
     s.on('group_deleted', onGroupDeleted);
     s.on('board_moved_to_group', onBoardMoved);
+    s.on('settings_updated', onSettingsUpdated);
 
     return () => {
       s.off('board_created', onCreated);
@@ -76,6 +67,7 @@ export default function HomePage() {
       s.off('group_created', onGroupCreated);
       s.off('group_deleted', onGroupDeleted);
       s.off('board_moved_to_group', onBoardMoved);
+      s.off('settings_updated', onSettingsUpdated);
     };
   }, [socket, connected]);
 
@@ -151,16 +143,9 @@ export default function HomePage() {
 
   const handleSaveSettings = async (newSettings) => {
     try {
-      const res = await fetch(`${SERVER_URL}/api/settings`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(newSettings),
-      });
-      const data = await res.json();
-      setSettings(data);
+      await updateSettings(newSettings);
       setShowSettings(false);
     } catch (err) {
-      console.error('Failed to save settings:', err);
       alert('Error saving settings.');
     }
   };

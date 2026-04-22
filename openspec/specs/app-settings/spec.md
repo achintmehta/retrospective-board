@@ -1,26 +1,40 @@
 # app-settings Specification
 
 ## Purpose
-TBD - created by archiving change configurable-home-page. Update Purpose after archive.
+The Application Settings specification defines the requirements for global platform configuration, specifically focused on branding elements, visual themes, and real-time synchronization of these settings across all connected users.
+
 ## Requirements
+
 ### Requirement: Manage Application Branding
-The system SHALL provide an interface to configure global application branding elements, specifically the Application Title, Subtitle, and Logo Icon.
+The system SHALL provide an interface to configure global application branding elements:
+- **Application Title**: The main platform name.
+- **Subtitle / Description**: The platform's tagline or purpose.
+- **Logo Icon**: Standard emoji or custom image file.
 
-#### Scenario: User updates application title
-- **WHEN** the user submits a new Title through the application settings interface
-- **THEN** the application title is updated in the database and shown on the home page upon the next refresh/load
+#### Scenario: User updates branding
+- **WHEN** the user submits new branding values through the settings interface
+- **THEN** the values are persisted to the database and updated in the UI across all active sessions.
 
-### Requirement: Custom Logo Icon Support
-The system SHALL support branding icons in the form of either a standard emoji or a custom image file.
+### Requirement: Seven-Point Theme Customization
+The system SHALL allow users to configure granular branding colors across seven specific application points:
+- **Primary Background**: Global platform background.
+- **Primary Font**: Global text color.
+- **Dashboard Cards**: Background for cards on the home page.
+- **Retro Cards**: Background for cards on individual boards.
+- **Column Color**: Background for retro board columns.
+- **Highlight (Accent)**: Primary branding and button color.
+- **Highlight Hover**: Interaction color for highlight elements.
 
-#### Scenario: User uploads a site logo image
-- **WHEN** the user uploads a valid image file within the logo setting section
-- **THEN** the image is stored on the server and used as the platform's logo icon
+#### Scenario: Real-time theme update
+- **WHEN** the user submits any of the seven supported theme colors
+- **THEN** the colors are broadcast in real-time and injected as CSS variables (`--bg`, `--text`, `--card-dash`, `--card-retro`, `--column`, `--accent`, `--accent-hover`) on all active clients.
 
-### Requirement: Persist Branding State
-The system SHALL persist branding configurations through application restarts using the persistent database layer.
+### Requirement: Sticky & Scrollable Settings Interface
+The system SHALL provide a professional settings layout that prevents viewport overflow.
+- **Modal Width**: The settings modal SHALL be **650px wide**.
+- **Internal Overflow**: Content SHALL be scrollable within an internal area.
+- **Fixed Actions**: The header and action buttons SHALL remain fixed in place while scrolling.
 
-#### Scenario: Application restart
-- **WHEN** the server process is restarted
-- **THEN** previously configured branding settings (Title, Icon, etc.) are correctly re-loaded and applied to the UI
+### Requirement: Factory Reset
+The system SHALL allow users to restore all branding and theme settings (title, icon, colors) to their baseline values in a single confirmed action.
 
