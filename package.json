@@ -5,7 +5,7 @@
   "license": "MIT",
   "private": true,
   "scripts": {
-    "dev": "concurrently --names \"server,client\" --prefix-colors \"cyan,magenta\" \"npm run dev:server\" \"npm run dev:client\"",
+    "dev": "npx concurrently --names \"server,client\" --prefix-colors \"cyan,magenta\" \"npm run dev:server\" \"npm run dev:client\"",
     "dev:server": "cd server && npm run dev",
     "dev:client": "cd client && npm run dev",
     "start": "cd server && npm start",
