@@ -87,7 +87,7 @@ const handlers = {
     return {
       tools: [
         {
-          name: "List Workspace Contents",
+          name: "list_workspace_contents",
           description: "[read-only] Get a paginated list of all board groups and their boards",
           inputSchema: {
             type: "object",
@@ -98,7 +98,7 @@ const handlers = {
           },
         },
         {
-          name: "Create New Retro Board",
+          name: "create_new_retro_board",
           description: "Create a new retrospective board",
           inputSchema: {
             type: "object",
@@ -110,7 +110,7 @@ const handlers = {
           },
         },
         {
-          name: "Delete Retro Board",
+          name: "delete_retro_board",
           description: "Delete a retrospective board",
           inputSchema: {
             type: "object",
@@ -121,7 +121,7 @@ const handlers = {
           },
         },
         {
-          name: "Create Board Group",
+          name: "create_board_group",
           description: "Create a new board group (folder/workspace)",
           inputSchema: {
             type: "object",
@@ -132,7 +132,7 @@ const handlers = {
           },
         },
         {
-          name: "Delete Board Group",
+          name: "delete_board_group",
           description: "Delete a board group",
           inputSchema: {
             type: "object",
@@ -143,7 +143,7 @@ const handlers = {
           },
         },
         {
-          name: "Move Board to Group",
+          name: "move_board_to_group",
           description: "Move a board into or out of a group",
           inputSchema: {
             type: "object",
@@ -155,7 +155,7 @@ const handlers = {
           },
         },
         {
-          name: "Add Feedback Card",
+          name: "add_feedback_card",
           description: "Add a new card to a board column",
           inputSchema: {
             type: "object",
@@ -169,7 +169,7 @@ const handlers = {
           },
         },
         {
-          name: "Delete Card from Board",
+          name: "delete_card_from_board",
           description: "Delete a card by ID",
           inputSchema: {
             type: "object",
@@ -181,7 +181,7 @@ const handlers = {
           },
         },
         {
-          name: "Add Reaction to Card",
+          name: "add_reaction_to_card",
           description: "Add an emoji reaction (like, etc.) to a card",
           inputSchema: {
             type: "object",
@@ -194,7 +194,7 @@ const handlers = {
           },
         },
         {
-          name: "Reply to Card",
+          name: "reply_to_card",
           description: "Add a threaded reply to a card",
           inputSchema: {
             type: "object",
@@ -208,7 +208,7 @@ const handlers = {
           },
         },
         {
-          name: "Generate Board Summary",
+          name: "generate_board_summary",
           description: "[read-only] Get a summarized view of a board in Markdown format",
           inputSchema: {
             type: "object",
@@ -223,12 +223,12 @@ const handlers = {
   },
 
   callTool: async (name, args, io) => {
-    if (name === "Generate Board Summary") {
+    if (name === "generate_board_summary") {
       const board = await getBoardState(args.boardId);
       const md = boardToMarkdown(board);
       return { content: [{ type: "text", text: md }] };
     }
-    if (name === "List Workspace Contents") {
+    if (name === "list_workspace_contents") {
       const { page = 1, pageSize = 10 } = args;
       const offset = (page - 1) * pageSize;
       const groups = await dbAll("SELECT * FROM board_groups ORDER BY position ASC, name ASC LIMIT ? OFFSET ?", [pageSize, offset]);
@@ -240,48 +240,48 @@ const handlers = {
       };
     }
     // For mutating tools, we need to handle DB and IO
-    if (name === "Create New Retro Board") {
+    if (name === "create_new_retro_board") {
       const board = await createBoard(args.name);
       if (args.groupId) await moveBoardToGroup(board.id, args.groupId);
       io.emit("board_created", board);
       return { content: [{ type: "text", text: `Board created: ${board.id}` }] };
     }
-    if (name === "Delete Retro Board") {
+    if (name === "delete_retro_board") {
       await deleteBoard(args.boardId);
       io.emit("board_deleted", { boardId: args.boardId });
       return { content: [{ type: "text", text: `Board ${args.boardId} deleted` }] };
     }
-    if (name === "Create Board Group") {
+    if (name === "create_board_group") {
       const group = await createBoardGroup(args.name);
       io.emit("group_created", group);
       return { content: [{ type: "text", text: `Group created: ${group.id}` }] };
     }
-    if (name === "Delete Board Group") {
+    if (name === "delete_board_group") {
       await deleteBoardGroup(args.groupId);
       io.emit("group_deleted", { groupId: args.groupId });
       return { content: [{ type: "text", text: `Group ${args.groupId} deleted` }] };
     }
-    if (name === "Move Board to Group") {
+    if (name === "move_board_to_group") {
       await moveBoardToGroup(args.boardId, args.groupId);
       io.emit("board_moved_to_group", { boardId: args.boardId, groupId: args.groupId });
       return { content: [{ type: "text", text: `Board ${args.boardId} moved to group ${args.groupId}` }] };
     }
-    if (name === "Add Feedback Card") {
+    if (name === "add_feedback_card") {
       const card = await addCard(args.columnId, args.content, args.author, null);
       io.to(`board:${args.boardId}`).emit("card_added", card);
       return { content: [{ type: "text", text: `Card added successfully: ${card.id}` }] };
     }
-    if (name === "Delete Card from Board") {
+    if (name === "delete_card_from_board") {
       await deleteCard(args.cardId);
       io.to(`board:${args.boardId}`).emit("card_deleted", { cardId: args.cardId });
       return { content: [{ type: "text", text: `Card ${args.cardId} deleted` }] };
     }
-    if (name === "Add Reaction to Card") {
+    if (name === "add_reaction_to_card") {
       const reaction = await addReaction(args.cardId, args.emoji);
       io.to(`board:${args.boardId}`).emit("reaction_added", { cardId: args.cardId, reaction });
       return { content: [{ type: "text", text: `Reaction ${args.emoji} added to card ${args.cardId}` }] };
     }
-    if (name === "Reply to Card") {
+    if (name === "reply_to_card") {
       const reply = await addReply(args.cardId, args.content, args.author || "AI Assistant", null);
       io.to(`board:${args.boardId}`).emit("reply_added", { cardId: args.cardId, reply });
       return { content: [{ type: "text", text: `Reply added successfully: ${reply.id}` }] };
