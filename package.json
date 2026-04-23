@@ -4,6 +4,10 @@
   "description": "Self-hosted real-time retrospective board",
   "license": "MIT",
   "private": true,
+  "workspaces": [
+    "client",
+    "server"
+  ],
   "scripts": {
     "dev": "npx concurrently --names \"server,client\" --prefix-colors \"cyan,magenta\" \"npm run dev:server\" \"npm run dev:client\"",
     "dev:server": "cd server && npm run dev",
