@@ -63,6 +63,25 @@
 .user-label { color: var(--text-muted); font-size: 11px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.05em; }
 .user-name { font-weight: 600; color: var(--accent); }
 
+.export-header-btn {
+  display: flex !important;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  padding: 6px 12px !important;
+  color: var(--text-secondary) !important;
+}
+
+.export-header-btn:hover {
+  color: var(--accent) !important;
+  background: rgba(255, 255, 255, 0.05) !important;
+}
+
+.export-btn-label {
+  font-size: 12px;
+}
+
 .header-status {
   display: flex;
   align-items: center;
@@ -70,6 +89,11 @@
   flex-shrink: 0;
 }
 .status-text { font-size: 11px; color: var(--text-muted); }
+
+@media (max-width: 768px) {
+  .export-btn-label { display: none; }
+  .export-header-btn { padding: 6px 8px !important; }
+}
 
 @media (max-width: 600px) {
   .user-label { display: none; }
@@ -146,4 +170,85 @@
 @keyframes modalFade {
   from { opacity: 0; transform: scale(0.95); }
   to { opacity: 1; transform: scale(1); }
+}
+ 
+/* Print Styles */
+.print-summary {
+  display: none;
+}
+
+@media print {
+  .board-header, .back-btn, .export-header-btn, .header-status, .add-column-container, .btn-close, .modal-overlay,
+  .add-card-trigger, .add-card-form, .add-column-trigger, .add-column-form,
+  .open-replies-btn, .reply-form, .reply-delete, .add-reaction-btn, .reaction-picker-popup,
+  .card-delete, .delete-column-btn {
+    display: none !important;
+  }
+
+  .print-summary {
+    display: block !important;
+    color: black !important;
+    margin-bottom: 30px;
+    padding: 0 20px;
+  }
+
+  .print-summary h1 {
+    font-size: 28px;
+    margin-bottom: 12px;
+    text-align: left;
+  }
+
+  .print-stats {
+    display: flex;
+    gap: 32px;
+    font-size: 14px;
+    margin-bottom: 16px;
+  }
+
+  .print-stats p {
+    margin: 0;
+  }
+
+  .print-summary hr {
+    border: none;
+    border-top: 2px solid #eee;
+    margin: 20px 0;
+  }
+
+  .board-page {
+    height: auto !important;
+    overflow: visible !important;
+    background: white !important;
+    color: black !important;
+    display: block !important;
+  }
+
+  .board-columns {
+    display: block !important;
+    overflow: visible !important;
+    padding: 0 !important;
+  }
+
+  .column {
+    page-break-inside: avoid;
+    break-inside: avoid;
+    margin-bottom: 40px;
+    width: 100% !important;
+    max-width: none !important;
+    background: transparent !important;
+    border: 1px solid #eee !important;
+  }
+
+  .card {
+    page-break-inside: avoid;
+    break-inside: avoid;
+    border: 1px solid #eee !important;
+    box-shadow: none !important;
+    background: white !important;
+    color: black !important;
+  }
+
+  .board-name {
+    display: none !important; /* Managed by print-summary now */
+  }
 }

@@ -1,0 +1,91 @@
+.modal-content.export-modal {
+  width: 90%;
+  max-width: 450px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-2xl);
+  display: flex;
+  flex-direction: column;
+  padding: 0;
+}
+
+.modal-body-export {
+  padding: 24px;
+}
+
+.export-desc {
+  font-size: 14px;
+  color: var(--text-secondary);
+  line-height: 1.5;
+  margin-bottom: 24px;
+}
+
+.export-options {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.btn-export-option {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  text-align: left;
+  transition: all 0.2s ease;
+  width: 100%;
+  color: var(--text-primary);
+}
+
+.btn-export-option:hover {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: var(--accent);
+  transform: translateY(-1px);
+}
+
+.option-icon {
+  font-size: 24px;
+  background: var(--bg-primary);
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-color);
+}
+
+.option-text {
+  display: flex;
+  flex-direction: column;
+}
+
+.option-title {
+  font-weight: 600;
+  font-size: 15px;
+  margin-bottom: 2px;
+}
+
+.option-subtitle {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.modal-header .btn-close {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  font-size: 24px;
+  cursor: pointer;
+  padding: 0;
+  line-height: 1;
+}
+
+.modal-header .btn-close:hover {
+  color: var(--text-primary);
+}

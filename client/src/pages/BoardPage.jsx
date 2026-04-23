@@ -5,6 +5,7 @@ import { useBoard } from '../hooks/useBoard';
 import { useSocket } from '../contexts/SocketContext';
 import Column from '../components/Column';
 import AddColumnForm from '../components/AddColumnForm';
+import BoardExportModal from '../components/BoardExportModal';
 import './BoardPage.css';
 
 export default function BoardPage() {
@@ -14,6 +15,7 @@ export default function BoardPage() {
   const { board, setBoard, loading, error, addColumn, deleteColumn, addCard, moveCard, deleteCard, toggleReaction, addReply, deleteReply } = useBoard(boardId);
 
   const [showNamePrompt, setShowNamePrompt] = useState(false);
+  const [showExportModal, setShowExportModal] = useState(false);
   const [tempName, setTempName] = useState('');
   const [username, setUsername] = useState(localStorage.getItem('retro_username') || '');
 
@@ -124,6 +126,14 @@ export default function BoardPage() {
           </div>
         </div>
         <div className="header-right">
+          <button 
+            className="btn btn-ghost export-header-btn" 
+            onClick={() => setShowExportModal(true)}
+            title="Export Board"
+          >
+            <span>📤</span>
+            <span className="export-btn-label">Export</span>
+          </button>
           <div className="user-indicator" title={username ? `Logged in as ${username}` : 'Logged in as Anonymous'}>
             <span className="user-icon">👤</span>
             <span className="user-label">Logged in as:</span>
@@ -135,6 +145,24 @@ export default function BoardPage() {
           </div>
         </div>
       </header>
+
+      {/* Print-only summary */}
+      <div className="print-summary">
+        <h1>{board.name}</h1>
+        <div className="print-stats">
+          <p><strong>Date:</strong> {new Date().toLocaleDateString('en-US', { dateStyle: 'full' })}</p>
+          <p><strong>Columns:</strong> {board.columns.length}</p>
+          <p><strong>Total Cards:</strong> {board.columns.reduce((acc, c) => acc + c.cards.length, 0)}</p>
+        </div>
+        <hr />
+      </div>
+
+      {showExportModal && (
+        <BoardExportModal 
+          board={board} 
+          onClose={() => setShowExportModal(false)} 
+        />
+      )}
 
       <DragDropContext onDragEnd={onDragEnd}>
         <div className="board-columns">

@@ -4,21 +4,22 @@ A **self-hosted, real-time retrospective board** for agile teams. Open-source, M
 
 ## Preview
 
-### Dashboard (Grid View)
-![TeamSync Dashboard](docs/screenshots/home-page.png)
+### Dashboard (Dynamic Workspace)
+![TeamSync Dashboard](docs/screenshots/home-page-v3.png)
 
-### Board Interface
-![Sprint Retrospective](docs/screenshots/board-view.png)
+### Board Interface (High Fidelity)
+![Sprint Retrospective](docs/screenshots/board-view-v3.png)
 
 ## Features
 
-- 📋 Create & delete boards
-- ➕ Add & delete columns
-- 🃏 Add, move (drag-and-drop), and delete cards
-- 🕵️ Post cards anonymously or with your name
-- ⚡ Real-time sync across all connected clients (Socket.IO)
-- 💾 Persistent SQLite storage
-- 🐳 Docker-ready, single-container deployment
+- 📋 **Flexible Organization**: Create board groups and categorize your retrospectives into custom workspaces.
+- 🌈 **Theme Customization**: Tailor the interface to your preference with primary and secondary color controls.
+- ⚡ **Real-time Collaboration**: Instant sync across all connected clients via Socket.IO.
+- 🃏 **Rich Card Interactions**: Drag-and-drop movement, reactions, and threaded replies with image support.
+- 🕵️ **Anonymity Options**: Post cards anonymously or with your name for safe feedback.
+- 📤 **Advanced Export**: Save your board state as clean **Markdown** or high-fidelity **PDF** snapshots.
+- 💾 **Persistent Storage**: Robust data preservation using SQLite.
+- 🐳 **One-Click Deployment**: Docker-ready, single-container deployment or Docker Compose.
 
 ## Tech Stack (all MIT-licensed)
 
