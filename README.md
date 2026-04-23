@@ -86,6 +86,33 @@ Open **http://localhost:3001** in your browser.
 
 ---
 
+## AI Agent Connectivity (MCP)
+
+This platform includes a built-in **Model Context Protocol (MCP)** server, allowing AI agents (like Claude Desktop) to interact with your retrospective boards directly.
+
+### Features for Agents:
+- **Read Boards**: Pull board content as structured Markdown or raw JSON.
+- **Collaborate**: Agents can add or delete cards (updates reflect instantly in the web UI).
+- **Summarize**: Dedicated tools for board analysis.
+
+### Connecting Claude Desktop:
+Add the following to your `claude_desktop_config.json`:
+
+```json
+{
+  "mcpServers": {
+    "retro-board": {
+      "url": "http://localhost:3001/mcp"
+    }
+  }
+}
+```
+
+*Note: Replace `localhost:3001` with your actual server address if hosting remotely.*
+
+---
+
+
 ## License
 
 MIT © RetroBoard Contributors

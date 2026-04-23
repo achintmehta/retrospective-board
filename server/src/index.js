@@ -33,6 +33,19 @@ const io = new Server(server, {
 app.use(cors({ origin: CLIENT_URL }));
 app.use(express.json());
 
+// ─── Logging Middleware ───────────────────────────────────────────────────────
+app.use((req, res, next) => {
+  const start = Date.now();
+  res.on('finish', () => {
+    const duration = Date.now() - start;
+    console.log(`${new Date().toISOString()} [${req.method}] ${req.url} - ${res.statusCode} (${duration}ms)`);
+  });
+  next();
+});
+
+
+
+
 // ─── REST: Hydration & board list ─────────────────────────────────────────────
 
 app.get('/api/boards', async (req, res) => {
@@ -131,6 +144,125 @@ app.post('/api/upload', uploadParams.single('image'), (req, res) => {
 });
 
 app.use('/uploads', express.static(UPLOADS_DIR));
+
+// ─── MCP Integration ──────────────────────────────────────────────────────────
+const { SSEServerTransport } = require("@modelcontextprotocol/sdk/server/sse.js");
+const { StdioServerTransport } = require("@modelcontextprotocol/sdk/server/stdio.js");
+const { mcpServer, setupToolHandlers } = require("./mcpServer");
+const { ListToolsRequestSchema, ListResourcesRequestSchema, ReadResourceRequestSchema, CallToolRequestSchema } = require("@modelcontextprotocol/sdk/types.js");
+
+setupToolHandlers(io);
+
+// Store active transports to route post messages correctly
+const transports = new Map();
+
+app.get("/mcp", async (req, res) => {
+  const transport = new SSEServerTransport("/mcp", res);
+  await mcpServer.connect(transport);
+  
+  const sessionId = transport.sessionId;
+  transports.set(sessionId, transport);
+  
+  console.log(`MCP client connected. Session: ${sessionId}`);
+  
+  res.on("close", () => {
+    transports.delete(sessionId);
+    console.log(`MCP client disconnected. Session: ${sessionId}`);
+  });
+});
+
+app.post("/mcp", async (req, res) => {
+  const sessionId = req.query.sessionId;
+  
+  if (!sessionId) {
+    // Direct JSON-RPC handling for clients like Claude Code
+    console.log("Processing direct MCP JSON-RPC message...");
+    try {
+      // For one-off HTTP POSTs, we'll use the server's message processing logic
+      // but without the stateful 'connect' call.
+      // We'll manually handle the initialize/discovery methods for now
+      // as they are the most common stateless requests.
+      if (req.body.method === 'initialize') {
+        return res.json({
+          jsonrpc: "2.0",
+          id: req.body.id,
+          result: {
+            protocolVersion: "2025-11-25",
+            capabilities: {
+              resources: { subscribe: false, listChanged: false },
+              tools: { listChanged: false }
+            },
+            serverInfo: { name: "retro-board-server", version: "1.0.0" }
+          }
+        });
+      }
+
+
+      if (req.body.method === 'notifications/initialized') {
+        return res.status(200).end();
+      }
+
+      if (req.body.method === 'tools/list') {
+        const { handlers } = require("./mcpServer");
+        const result = await handlers.listTools();
+        return res.json({ jsonrpc: "2.0", id: req.body.id, result });
+      }
+
+      if (req.body.method === 'resources/list') {
+        const { handlers } = require("./mcpServer");
+        const result = await handlers.listResources();
+        return res.json({ jsonrpc: "2.0", id: req.body.id, result });
+      }
+
+      if (req.body.method === 'tools/call') {
+        const { handlers } = require("./mcpServer");
+        const result = await handlers.callTool(req.body.params.name, req.body.params.arguments, io);
+        return res.json({ jsonrpc: "2.0", id: req.body.id, result });
+      }
+
+      if (req.body.method === 'resources/read') {
+        const { handlers } = require("./mcpServer");
+        const result = await handlers.readResource(req.body.params.uri);
+        return res.json({ jsonrpc: "2.0", id: req.body.id, result });
+      }
+
+      // Fallback for other methods
+      console.log("Stateless request for method:", req.body.method);
+      return res.status(400).json({
+        jsonrpc: "2.0",
+        id: req.body.id,
+        error: { code: -32601, message: `Method ${req.body.method} not supported in stateless mode` }
+      });
+
+    } catch (err) {
+      console.error("Direct MCP POST failed:", err);
+      if (!res.headersSent) {
+        res.status(500).json({ jsonrpc: "2.0", id: req.body.id, error: { code: -32603, message: "Internal error" } });
+      }
+      return;
+    }
+  }
+
+
+  const transport = transports.get(sessionId);
+  if (!transport) {
+    return res.status(404).send(`Session not found: ${sessionId}`);
+  }
+  await transport.handlePostMessage(req, res);
+});
+
+
+// Also keep /mcp/messages just in case
+app.post("/mcp/messages", async (req, res) => {
+  const sessionId = req.query.sessionId;
+  const transport = transports.get(sessionId);
+  if (transport) {
+    await transport.handlePostMessage(req, res);
+  } else {
+    res.status(404).send(`Session not found: ${sessionId}`);
+  }
+});
+
 
 // ─── Static files (production) ────────────────────────────────────────────────
 
@@ -319,6 +451,8 @@ io.on('connection', (socket) => {
 // ─── Start ───────────────────────────────────────────────────────────────────
 
 const PORT = parseInt(process.env.PORT || '3001', 10);
+
 server.listen(PORT, () => {
   console.log(`Retro board server listening on port ${PORT}`);
 });
+
