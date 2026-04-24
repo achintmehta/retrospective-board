@@ -86,18 +86,16 @@ Open **http://localhost:3001** in your browser.
 
 ---
 
-## AI Agent Connectivity (MCP)
+## Agentic Workspace & MCP 🤖
 
-This platform includes a built-in **Model Context Protocol (MCP)** server, allowing AI agents (like Claude Desktop) to interact with your retrospective boards directly.
+This platform is a **First-Class AI Environment**. It includes a robust implementation of the **Model Context Protocol (MCP)**, allowing AI agents to participate in retrospectives alongside human team-members.
 
-### Features for Agents:
-- **Read Boards**: Pull board content as structured Markdown or raw JSON.
-- **Collaborate**: Agents can add or delete cards (updates reflect instantly in the web UI).
-- **Summarize**: Dedicated tools for board analysis.
+### 🔌 Connectivity Options
 
-### Connecting Claude Desktop:
-Add the following to your `claude_desktop_config.json`:
+The server supports dual-mode transport for maximum flexibility:
 
+#### 1. Claude Desktop (SSE / Web mode)
+Best for persistent, browser-connected agents. Add this to your `claude_desktop_config.json`:
 ```json
 {
   "mcpServers": {
@@ -108,10 +106,40 @@ Add the following to your `claude_desktop_config.json`:
 }
 ```
 
-*Note: Replace `localhost:3001` with your actual server address if hosting remotely.*
+#### 2. Claude CLI / Claude Code (Stdio mode)
+Best for terminal-based agents and local development. Point your CLI directly to the server script:
+```bash
+node server/src/index.js --stdio
+```
+
+### 🔔 Persistent Notification Center
+Unlike standard message bridges, this server maintains a **Persistent Activity Log** in SQLite. Agents can "catch up" on missed activity using the `get_recent_notifications` tool or subscribe to real-time `resources/updated` alerts.
+
+### 🛠️ Agent Tool Suite
+Agents gain access to 15+ specialized tools, including:
+- `get_board_details`: Retrieves structured JSON with `cardId` and `columnId` for programmatic interaction.
+- `add_feedback_card`: Proactively contribute to any column.
+- `get_recent_notifications`: Query the high-fidelity activity heartbeat.
+- `generate_board_summary`: AI-optimized board analysis.
 
 ---
 
+## API Specification (OpenAPI) 📖
+
+The project maintains an automated **OpenAPI 3.0** specification.
+
+### 📦 Discovery
+You can discover the full API surface by accessing the static specification:
+- **URL**: `http://localhost:3001/openapi.json`
+- **Format**: JSON-Spec (OAS 3.0)
+
+### ⚙️ Generation
+The specification is automatically generated from JSDoc comments in the codebase. To regenerate the spec after making changes, run:
+```bash
+npm run gen-api
+```
+
+---
 
 ## License
 

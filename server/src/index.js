@@ -48,6 +48,26 @@ app.use((req, res, next) => {
 
 // ─── REST: Hydration & board list ─────────────────────────────────────────────
 
+/**
+ * @swagger
+ * /api/boards:
+ *   get:
+ *     summary: List all boards
+ *     description: Retrieve a flat list of all boards in the workspace.
+ *     responses:
+ *       200:
+ *         description: A list of boards
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ *                 properties:
+ *                   id: { type: string }
+ *                   name: { type: string }
+ *                   group_id: { type: string, nullable: true }
+ */
 app.get('/api/boards', async (req, res) => {
   try {
     const boards = await listBoards();
@@ -57,6 +77,16 @@ app.get('/api/boards', async (req, res) => {
   }
 });
 
+/**
+ * @swagger
+ * /api/groups:
+ *   get:
+ *     summary: List all board groups
+ *     description: Retrieve all workspace groups with their assigned boards.
+ *     responses:
+ *       200:
+ *         description: A list of board groups
+ */
 app.get('/api/groups', async (req, res) => {
   try {
     const groups = await listBoardGroups();
@@ -66,6 +96,30 @@ app.get('/api/groups', async (req, res) => {
   }
 });
 
+app.get('/openapi.json', (req, res) => {
+  const specPath = path.join(__dirname, '../../openapi.json');
+  if (fs.existsSync(specPath)) {
+    res.sendFile(specPath);
+  } else {
+    res.status(404).json({ error: 'Specification not generated yet. Run npm run gen-api.' });
+  }
+});
+
+/**
+ * @swagger
+ * /api/boards/{boardId}:
+ *   get:
+ *     summary: Get full board state
+ *     description: Retrieve all columns, cards, and metadata for a specific board.
+ *     parameters:
+ *       - in: path
+ *         name: boardId
+ *         required: true
+ *         schema: { type: string }
+ *     responses:
+ *       200: { description: Full board JSON }
+ *       404: { description: Board not found }
+ */
 app.get('/api/boards/:boardId', async (req, res) => {
   try {
     const state = await getBoardState(req.params.boardId);
@@ -76,6 +130,23 @@ app.get('/api/boards/:boardId', async (req, res) => {
   }
 });
 
+/**
+ * @swagger
+ * /api/settings:
+ *   get:
+ *     summary: Get app settings
+ *     responses:
+ *       200: { description: App settings JSON }
+ *   post:
+ *     summary: Update app settings
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema: { type: object }
+ *     responses:
+ *       200: { description: Updated settings JSON }
+ */
 app.get('/api/settings', async (req, res) => {
   try {
     const settings = await getAppSettings();
@@ -136,6 +207,21 @@ const storage = multer.diskStorage({
 });
 const uploadParams = multer({ storage, limits: { fileSize: 10 * 1024 * 1024 } }); // 10MB limit
 
+/**
+ * @swagger
+ * /api/upload:
+ *   post:
+ *     summary: Upload an image
+ *     requestBody:
+ *       content:
+ *         multipart/form-data:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               image: { type: string, format: binary }
+ *     responses:
+ *       200: { description: Image URL JSON }
+ */
 app.post('/api/upload', uploadParams.single('image'), (req, res) => {
   if (!req.file) {
     return res.status(400).json({ error: 'No file uploaded' });
@@ -156,6 +242,15 @@ setupToolHandlers(io);
 // Store active transports to route post messages correctly
 const transports = new Map();
 
+/**
+ * @swagger
+ * /mcp:
+ *   get:
+ *     summary: MCP SSE Handshake
+ *     description: Establishes a Server-Sent Events (SSE) connection for the Model Context Protocol.
+ *     responses:
+ *       200: { description: SSE stream established }
+ */
 app.get("/mcp", async (req, res) => {
   const transport = new SSEServerTransport("/mcp", res);
   await mcpServer.connect(transport);
@@ -171,6 +266,31 @@ app.get("/mcp", async (req, res) => {
   });
 });
 
+/**
+ * @swagger
+ * /mcp:
+ *   post:
+ *     summary: MCP JSON-RPC Gateway
+ *     description: Unified entry point for all MCP tool calls and resource discoveries. Supports both stateful (via sessionId) and stateless (direct) requests.
+ *     parameters:
+ *       - in: query
+ *         name: sessionId
+ *         schema: { type: string }
+ *         description: Required for stateful SSE sessions.
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               jsonrpc: { type: string, example: "2.0" }
+ *               method: { type: string }
+ *               params: { type: object }
+ *               id: { type: string }
+ *     responses:
+ *       200: { description: JSON-RPC response }
+ */
 app.post("/mcp", async (req, res) => {
   const sessionId = req.query.sessionId;
   

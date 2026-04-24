@@ -45,6 +45,24 @@ const mcpServer = new Server(
 );
 
 /**
+ * @swagger
+ * components:
+ *   schemas:
+ *     MCP_Tool:
+ *       type: object
+ *       properties:
+ *         name: { type: string }
+ *         description: { type: string }
+ *         inputSchema: { type: object }
+ *     MCP_Resource:
+ *       type: object
+ *       properties:
+ *         uri: { type: string }
+ *         name: { type: string }
+ *         mimeType: { type: string }
+ */
+
+/**
  * Logic handlers for reuse across SSE and Stateless flows
  */
 const handlers = {

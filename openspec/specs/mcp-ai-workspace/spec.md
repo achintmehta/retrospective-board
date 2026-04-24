@@ -25,3 +25,12 @@ The system SHALL support both stateful (SSE) and stateless (Direct Stdio) commun
 #### Scenario: Terminal-based agent interaction
 - **WHEN** a CLI agent starts the server with the `--stdio` flag
 - **THEN** the system bypasses the HTTP/Express layer and provides a direct Stdio-to-MCP bridge for instant local tool access
+## ADDED Requirements
+
+### Requirement: High-Fidelity AI Onboarding
+The system SHALL provide a machine-readable and human-readable `README.md` that explicitly documents MCP surface area and connectivity options.
+
+#### Scenario: Documentation-first agent setup
+- **WHEN** an AI agent reads the project root `README.md`
+- **THEN** it MUST find a section dedicated to "MCP & AI Interaction"
+- **AND** that section MUST define the tool list, resource URI patterns, and how to configure Stdio vs. SSE transports

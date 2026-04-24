@@ -13,7 +13,8 @@
     "dev:server": "cd server && npm run dev",
     "dev:client": "cd client && npm run dev",
     "start": "cd server && npm start",
-    "build:client": "cd client && npm run build"
+    "build:client": "cd client && npm run build",
+    "gen-api": "npm run gen-api --prefix server"
   },
   "devDependencies": {
     "concurrently": "^8.2.2"
