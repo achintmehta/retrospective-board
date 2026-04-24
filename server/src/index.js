@@ -148,7 +148,7 @@ app.use('/uploads', express.static(UPLOADS_DIR));
 // ─── MCP Integration ──────────────────────────────────────────────────────────
 const { SSEServerTransport } = require("@modelcontextprotocol/sdk/server/sse.js");
 const { StdioServerTransport } = require("@modelcontextprotocol/sdk/server/stdio.js");
-const { mcpServer, setupToolHandlers } = require("./mcpServer");
+const { mcpServer, setupToolHandlers, handlers, notifySubscribers, notifyResourceListChanged } = require("./mcpServer");
 const { ListToolsRequestSchema, ListResourcesRequestSchema, ReadResourceRequestSchema, CallToolRequestSchema } = require("@modelcontextprotocol/sdk/types.js");
 
 setupToolHandlers(io);
@@ -189,8 +189,8 @@ app.post("/mcp", async (req, res) => {
           result: {
             protocolVersion: "2025-11-25",
             capabilities: {
-              resources: { subscribe: false, listChanged: false },
-              tools: { listChanged: false }
+              resources: { subscribe: true, listChanged: true },
+              tools: { listChanged: true }
             },
             serverInfo: { name: "retro-board-server", version: "1.0.0" }
           }
@@ -203,25 +203,21 @@ app.post("/mcp", async (req, res) => {
       }
 
       if (req.body.method === 'tools/list') {
-        const { handlers } = require("./mcpServer");
         const result = await handlers.listTools();
         return res.json({ jsonrpc: "2.0", id: req.body.id, result });
       }
 
       if (req.body.method === 'resources/list') {
-        const { handlers } = require("./mcpServer");
         const result = await handlers.listResources();
         return res.json({ jsonrpc: "2.0", id: req.body.id, result });
       }
 
       if (req.body.method === 'tools/call') {
-        const { handlers } = require("./mcpServer");
         const result = await handlers.callTool(req.body.params.name, req.body.params.arguments, io);
         return res.json({ jsonrpc: "2.0", id: req.body.id, result });
       }
 
       if (req.body.method === 'resources/read') {
-        const { handlers } = require("./mcpServer");
         const result = await handlers.readResource(req.body.params.uri);
         return res.json({ jsonrpc: "2.0", id: req.body.id, result });
       }
@@ -293,6 +289,7 @@ io.on('connection', (socket) => {
     try {
       const board = await createBoard(name || 'Untitled Retro');
       io.emit('board_created', board);
+      notifyResourceListChanged();
       callback?.({ ok: true, board });
     } catch (err) {
       callback?.({ ok: false, error: err.message });
@@ -303,6 +300,7 @@ io.on('connection', (socket) => {
     try {
       await deleteBoard(boardId);
       io.emit('board_deleted', { boardId });
+      notifyResourceListChanged();
       callback?.({ ok: true });
     } catch (err) {
       callback?.({ ok: false, error: err.message });
@@ -369,6 +367,8 @@ io.on('connection', (socket) => {
     try {
       const card = await addCard(columnId, content, author, imageUrl);
       io.to(`board:${boardId}`).emit('card_added', card);
+      notifySubscribers(`retro://boards/${boardId}/md`);
+      notifySubscribers(`retro://boards/${boardId}/full`);
       callback?.({ ok: true, card });
     } catch (err) {
       callback?.({ ok: false, error: err.message });
@@ -390,6 +390,8 @@ io.on('connection', (socket) => {
     try {
       await deleteCard(cardId);
       io.to(`board:${boardId}`).emit('card_deleted', { cardId });
+      notifySubscribers(`retro://boards/${boardId}/md`);
+      notifySubscribers(`retro://boards/${boardId}/full`);
       callback?.({ ok: true });
     } catch (err) {
       callback?.({ ok: false, error: err.message });
@@ -402,6 +404,8 @@ io.on('connection', (socket) => {
     try {
       const reply = await addReply(cardId, content, author, imageUrl);
       io.to(`board:${boardId}`).emit('reply_added', reply);
+      notifySubscribers(`retro://boards/${boardId}/md`);
+      notifySubscribers(`retro://boards/${boardId}/full`);
       callback?.({ ok: true, reply });
     } catch (err) {
       callback?.({ ok: false, error: err.message });
@@ -424,6 +428,8 @@ io.on('connection', (socket) => {
     try {
       const reaction = await addReaction(cardId, emoji);
       io.to(`board:${boardId}`).emit('reaction_added', reaction);
+      notifySubscribers(`retro://boards/${boardId}/md`);
+      notifySubscribers(`retro://boards/${boardId}/full`);
       callback?.({ ok: true, reaction });
     } catch (err) {
       callback?.({ ok: false, error: err.message });
@@ -454,5 +460,13 @@ const PORT = parseInt(process.env.PORT || '3001', 10);
 
 server.listen(PORT, () => {
   console.log(`Retro board server listening on port ${PORT}`);
+  
+  // Also start Stdio transport if requested (common for CLI tools like Claude Code)
+  if (process.env.MCP_STDIO === 'true' || process.argv.includes('--stdio')) {
+    const stdioTransport = new StdioServerTransport();
+    mcpServer.connect(stdioTransport).catch(err => {
+      console.error("Failed to connect Stdio transport:", err);
+    });
+    console.log("MCP Stdio transport active");
+  }
 });
-

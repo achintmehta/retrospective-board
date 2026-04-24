@@ -110,6 +110,30 @@ db.serialize(() => {
       db.run("ALTER TABLE boards ADD COLUMN group_id TEXT REFERENCES board_groups(id) ON DELETE SET NULL;");
     }
   });
+
+  // notifications table
+  db.run(`
+    CREATE TABLE IF NOT EXISTS notifications (
+      id TEXT PRIMARY KEY,
+      board_id TEXT,
+      event_type TEXT NOT NULL,
+      message TEXT NOT NULL,
+      is_read INTEGER NOT NULL DEFAULT 0,
+      created_at TEXT NOT NULL DEFAULT (datetime('now'))
+    )
+  `);
+
+  // subscriptions table (for AI agent alerts)
+  db.run(`
+    CREATE TABLE IF NOT EXISTS mcp_subscriptions (
+      id TEXT PRIMARY KEY,
+      board_id TEXT NOT NULL,
+      client_id TEXT NOT NULL,
+      alert_type TEXT NOT NULL DEFAULT 'all',
+      created_at TEXT NOT NULL DEFAULT (datetime('now')),
+      UNIQUE(board_id, client_id)
+    )
+  `);
 });
 
 // Promisified helpers

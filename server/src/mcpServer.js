@@ -15,6 +15,7 @@ const {
   getBoardState,
   getAppSettings, updateAppSetting,
   createBoardGroup, deleteBoardGroup, listBoardGroups, moveBoardToGroup,
+  createNotification, getRecentNotifications, markNotificationAsRead, subscribeToBoardAlerts
 } = require('./boardHandlers');
 const { boardToMarkdown } = require("./utils/markdownGenerator");
 const sqlite3 = require("sqlite3");
@@ -37,7 +38,7 @@ const mcpServer = new Server(
   },
   {
     capabilities: {
-      resources: {},
+      resources: { subscribe: true },
       tools: {},
     },
   }
@@ -86,6 +87,40 @@ const handlers = {
   listTools: async () => {
     return {
       tools: [
+        {
+          name: "get_recent_notifications",
+          description: "[read-only] Get a list of recent board activity and workspace changes",
+          inputSchema: {
+            type: "object",
+            properties: {
+              limit: { type: "number", default: 20 },
+              boardId: { type: "string", description: "Optional filter by board" },
+            },
+          },
+        },
+        {
+          name: "subscribe_to_board_alerts",
+          description: "Sign up to receive specific notifications for a board (simulated and logged)",
+          inputSchema: {
+            type: "object",
+            properties: {
+              boardId: { type: "string" },
+              alertType: { type: "string", enum: ["all", "mentions", "critical"], default: "all" },
+            },
+            required: ["boardId"],
+          },
+        },
+        {
+          name: "mark_notification_as_read",
+          description: "Clear a notification from the activity feed",
+          inputSchema: {
+            type: "object",
+            properties: {
+              notificationId: { type: "string" },
+            },
+            required: ["notificationId"],
+          },
+        },
         {
           name: "list_workspace_contents",
           description: "[read-only] Get a paginated list of all board groups and their boards",
@@ -208,6 +243,17 @@ const handlers = {
           },
         },
         {
+          name: "get_board_details",
+          description: "[read-only] Get the full board state in a structured JSON format including all card and column IDs",
+          inputSchema: {
+            type: "object",
+            properties: {
+              boardId: { type: "string" },
+            },
+            required: ["boardId"],
+          },
+        },
+        {
           name: "generate_board_summary",
           description: "[read-only] Get a summarized view of a board in Markdown format",
           inputSchema: {
@@ -223,10 +269,52 @@ const handlers = {
   },
 
   callTool: async (name, args, io) => {
+    if (name === "get_board_details") {
+      const board = await getBoardState(args.boardId);
+      // Map IDs to the friendly names requested by the agent logic
+      const result = {
+        boardId: board.id,
+        name: board.name,
+        columns: board.columns.map(col => ({
+          columnId: col.id,
+          name: col.name,
+          cards: col.cards.map(card => ({
+            cardId: card.id,
+            content: card.content,
+            author: card.author,
+            reactions: card.reactions,
+            replies: card.replies
+          }))
+        }))
+      };
+      return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
+    }
+    if (name === "get_recent_notifications") {
+      const { limit = 20, boardId = null } = args;
+      const notes = await getRecentNotifications(limit, boardId);
+      return { content: [{ type: "text", text: JSON.stringify(notes, null, 2) }] };
+    }
+    if (name === "subscribe_to_board_alerts") {
+      const { boardId, alertType = "all" } = args;
+      const sub = await subscribeToBoardAlerts(boardId, "mcp-agent", alertType);
+      return { content: [{ type: "text", text: `Subscribed successfully: ${sub.id}` }] };
+    }
+    if (name === "mark_notification_as_read") {
+      const { notificationId } = args;
+      await markNotificationAsRead(notificationId);
+      return { content: [{ type: "text", text: `Notification ${notificationId} marked as read` }] };
+    }
     if (name === "generate_board_summary") {
       const board = await getBoardState(args.boardId);
       const md = boardToMarkdown(board);
-      return { content: [{ type: "text", text: md }] };
+      
+      // We return both Markdown for the chat and JSON for the UI logic
+      return { 
+        content: [
+          { type: "text", text: md },
+          { type: "text", text: `JSON_DATA: ${JSON.stringify(board)}` }
+        ] 
+      };
     }
     if (name === "list_workspace_contents") {
       const { page = 1, pageSize = 10 } = args;
@@ -244,11 +332,13 @@ const handlers = {
       const board = await createBoard(args.name);
       if (args.groupId) await moveBoardToGroup(board.id, args.groupId);
       io.emit("board_created", board);
+      notifyResourceListChanged(`New board created: ${board.name}`);
       return { content: [{ type: "text", text: `Board created: ${board.id}` }] };
     }
     if (name === "delete_retro_board") {
       await deleteBoard(args.boardId);
       io.emit("board_deleted", { boardId: args.boardId });
+      notifyResourceListChanged(`Board deleted: ${args.boardId}`);
       return { content: [{ type: "text", text: `Board ${args.boardId} deleted` }] };
     }
     if (name === "create_board_group") {
@@ -269,21 +359,29 @@ const handlers = {
     if (name === "add_feedback_card") {
       const card = await addCard(args.columnId, args.content, args.author, null);
       io.to(`board:${args.boardId}`).emit("card_added", card);
+      notifySubscribers(`retro://boards/${args.boardId}/md`, `Card added to board: ${card.content}`);
+      notifySubscribers(`retro://boards/${args.boardId}/full`);
       return { content: [{ type: "text", text: `Card added successfully: ${card.id}` }] };
     }
     if (name === "delete_card_from_board") {
       await deleteCard(args.cardId);
       io.to(`board:${args.boardId}`).emit("card_deleted", { cardId: args.cardId });
+      notifySubscribers(`retro://boards/${args.boardId}/md`);
+      notifySubscribers(`retro://boards/${args.boardId}/full`);
       return { content: [{ type: "text", text: `Card ${args.cardId} deleted` }] };
     }
     if (name === "add_reaction_to_card") {
       const reaction = await addReaction(args.cardId, args.emoji);
       io.to(`board:${args.boardId}`).emit("reaction_added", { cardId: args.cardId, reaction });
+      notifySubscribers(`retro://boards/${args.boardId}/md`);
+      notifySubscribers(`retro://boards/${args.boardId}/full`);
       return { content: [{ type: "text", text: `Reaction ${args.emoji} added to card ${args.cardId}` }] };
     }
     if (name === "reply_to_card") {
       const reply = await addReply(args.cardId, args.content, args.author || "AI Assistant", null);
       io.to(`board:${args.boardId}`).emit("reply_added", { cardId: args.cardId, reply });
+      notifySubscribers(`retro://boards/${args.boardId}/md`);
+      notifySubscribers(`retro://boards/${args.boardId}/full`);
       return { content: [{ type: "text", text: `Reply added successfully: ${reply.id}` }] };
     }
 
@@ -326,6 +424,35 @@ mcpServer.setRequestHandler(ReadResourceRequestSchema, async (request) => {
 /**
  * Tools
  */
+/**
+ * Global notification bridge helpers
+ */
+async function notifySubscribers(uri, message = "Resource updated") {
+  try {
+    // 1. Persistence (Activity Log) - Do this first!
+    const boardMatch = uri.match(/^retro:\/\/boards\/([^\/]+)/);
+    const boardId = boardMatch ? boardMatch[1] : null;
+    await createNotification("resource_updated", message, boardId);
+    
+    // 2. Protocol Sync (Real-time Nudge)
+    await mcpServer.sendResourceUpdated({ uri });
+  } catch (error) {
+    console.log(`[MCP Notify] Bridge for ${uri}: ${error.message}`);
+  }
+}
+
+async function notifyResourceListChanged(message = "Workspace structure changed") {
+  try {
+    // 1. Persistence
+    await createNotification("list_changed", message);
+
+    // 2. Protocol Sync
+    await mcpServer.sendResourceListChanged();
+  } catch (error) {
+    console.log(`[MCP Notify] List bridge: ${error.message}`);
+  }
+}
+
 mcpServer.setRequestHandler(ListToolsRequestSchema, handlers.listTools);
 
 // We'll expose a function to register tool executors with access to the Socket.IO instance
@@ -335,4 +462,4 @@ function setupToolHandlers(io) {
   });
 }
 
-module.exports = { mcpServer, setupToolHandlers, handlers };
+module.exports = { mcpServer, setupToolHandlers, handlers, notifySubscribers, notifyResourceListChanged };

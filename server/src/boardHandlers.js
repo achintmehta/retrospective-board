@@ -180,6 +180,37 @@ async function updateAppSetting(key, value) {
   return { key, value };
 }
 
+// --- Notification & Subscription Handlers ---
+
+async function createNotification(eventType, message, boardId = null) {
+  const id = uuidv4();
+  await dbRun('INSERT INTO notifications (id, board_id, event_type, message) VALUES (?, ?, ?, ?)', [id, boardId, eventType, message]);
+  return dbGet('SELECT * FROM notifications WHERE id = ?', [id]);
+}
+
+async function getRecentNotifications(limit = 20, boardId = null) {
+  let sql = 'SELECT * FROM notifications';
+  const params = [];
+  if (boardId) {
+    sql += ' WHERE board_id = ? OR board_id IS NULL';
+    params.push(boardId);
+  }
+  sql += ' ORDER BY created_at DESC LIMIT ?';
+  params.push(limit);
+  return dbAll(sql, params);
+}
+
+async function markNotificationAsRead(id) {
+  await dbRun('UPDATE notifications SET is_read = 1 WHERE id = ?', [id]);
+  return dbGet('SELECT * FROM notifications WHERE id = ?', [id]);
+}
+
+async function subscribeToBoardAlerts(boardId, clientId, alertType = 'all') {
+  const id = uuidv4();
+  await dbRun('INSERT OR REPLACE INTO mcp_subscriptions (id, board_id, client_id, alert_type) VALUES (?, ?, ?, ?)', [id, boardId, clientId, alertType]);
+  return dbGet('SELECT * FROM mcp_subscriptions WHERE id = ?', [id]);
+}
+
 module.exports = {
   createBoard, deleteBoard, listBoards,
   addColumn, deleteColumn,
@@ -189,4 +220,5 @@ module.exports = {
   getBoardState,
   getAppSettings, updateAppSetting,
   createBoardGroup, deleteBoardGroup, listBoardGroups, moveBoardToGroup,
+  createNotification, getRecentNotifications, markNotificationAsRead, subscribeToBoardAlerts
 };

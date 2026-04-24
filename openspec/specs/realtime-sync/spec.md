@@ -1,5 +1,14 @@
 ## Purpose
 Define the realtime synchronization capabilities of the board.
+
+### Requirement: MCP Resource Subscription
+The system SHALL support the Model Context Protocol (MCP) `resources/subscribe` capability. AI agents can "watch" generic board resources (Markdown and JSON) and receive proactive `notifications/resources/updated` alerts when board state changes.
+
+#### Scenario: Proactive AI Notification
+- **WHEN** any client (Web or AI) adds a card to a board
+- **THEN** the system triggers standard Socket.io broadcasts to Web clients
+- **AND** the system broadcasts a `notifications/resources/updated` event to all MCP clients subscribed to that board's resource URI
+
 ## Requirements
 ### Requirement: Broadcast Board Changes
 The system SHALL instantly broadcast board mutations (cards added, moved, deleted; columns added, deleted) to all connected clients viewing that board.
