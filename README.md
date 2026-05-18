@@ -100,7 +100,12 @@ Best for persistent, browser-connected agents. Add this to your `claude_desktop_
 {
   "mcpServers": {
     "retro-board": {
-      "url": "http://localhost:3001/mcp"
+      "command": "npx",
+      "args": [
+        "mcp-remote",
+        "http://localhost:3001/mcp",
+        "--allow-http"
+      ]
     }
   }
 }
