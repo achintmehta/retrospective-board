@@ -18,18 +18,7 @@ const {
   createNotification, getRecentNotifications, markNotificationAsRead, subscribeToBoardAlerts
 } = require('./boardHandlers');
 const { boardToMarkdown } = require("./utils/markdownGenerator");
-const sqlite3 = require("sqlite3");
-const path = require("path");
-
-const DB_PATH = process.env.DB_PATH || path.join(__dirname, "../data/retro.db");
-const db = new sqlite3.Database(DB_PATH);
-
-const dbAll = (query, params = []) => new Promise((resolve, reject) => {
-  db.all(query, params, (err, rows) => {
-    if (err) reject(err);
-    else resolve(rows);
-  });
-});
+const { dbAll } = require("./db/database");
 
 const mcpServer = new Server(
   {

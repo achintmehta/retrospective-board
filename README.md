@@ -18,7 +18,7 @@ A **self-hosted, real-time retrospective board** for agile teams. Open-source, M
 - 🃏 **Rich Card Interactions**: Drag-and-drop movement, reactions, and threaded replies with image support.
 - 🕵️ **Anonymity Options**: Post cards anonymously or with your name for safe feedback.
 - 📤 **Advanced Export**: Save your board state as clean **Markdown** or high-fidelity **PDF** snapshots.
-- 💾 **Persistent Storage**: Robust data preservation using SQLite.
+- 💾 **Persistent Storage**: Robust data preservation using PostgreSQL.
 - 🐳 **One-Click Deployment**: Docker-ready, single-container deployment or Docker Compose.
 
 ## Tech Stack (all MIT-licensed)
@@ -28,7 +28,7 @@ A **self-hosted, real-time retrospective board** for agile teams. Open-source, M
 | Frontend | React 18 + Vite |
 | Real-time | Socket.IO |
 | Backend | Node.js + Express |
-| Database | SQLite (sqlite3) |
+| Database | PostgreSQL 16 |
 | Drag & Drop | @hello-pangea/dnd |
 | Container | Docker |
 
@@ -39,15 +39,29 @@ A **self-hosted, real-time retrospective board** for agile teams. Open-source, M
 ### Prerequisites
 - Node.js ≥ 18
 - npm
+- Docker (for the PostgreSQL database)
 
-### Install all dependencies
+### 1. Start the database
+
+The server requires a PostgreSQL instance. The easiest way is to spin one up via Docker Compose:
+
+```bash
+docker compose up db -d
+```
+
+This starts a Postgres 16 container on **localhost:5432** with:
+- user: `retro`
+- password: `retro`
+- database: `retroboard`
+
+### 2. Install all dependencies
 ```bash
 npm install          # root (concurrently)
 cd server && npm install && cd ..
 cd client && npm install && cd ..
 ```
 
-### Start everything with one command
+### 3. Start everything with one command
 ```bash
 npm run dev
 ```
@@ -61,15 +75,20 @@ This starts both the backend (port 3001) and the Vite dev server (port 5173) in 
 
 ## Production (Docker)
 
-### Single container
-```bash
-docker build -t retro-board .
-docker run -p 3001:3001 -v retro-data:/app/data retro-board
-```
-
-### With Docker Compose
+### With Docker Compose (recommended)
 ```bash
 docker compose up -d
+```
+
+This starts both the app and a PostgreSQL database together.
+
+### Single container (bring your own Postgres)
+```bash
+docker build -t retro-board .
+docker run -p 3001:3001 \
+  -e DATABASE_URL=postgres://retro:retro@<host>:5432/retroboard \
+  -e PGSSL=disable \
+  retro-board
 ```
 
 Open **http://localhost:3001** in your browser.
@@ -81,7 +100,13 @@ Open **http://localhost:3001** in your browser.
 | Environment variable | Default | Description |
 |---|---|---|
 | `PORT` | `3001` | Server port |
-| `DATA_DIR` | `./data` | SQLite database directory |
+| `DATABASE_URL` | _(unset)_ | Full Postgres connection string (overrides individual `PG*` vars) |
+| `PGHOST` | `localhost` | Postgres host |
+| `PGPORT` | `5432` | Postgres port |
+| `PGUSER` | `retro` | Postgres user |
+| `PGPASSWORD` | `retro` | Postgres password |
+| `PGDATABASE` | `retroboard` | Postgres database name |
+| `PGSSL` | _(unset)_ | Set to `disable` to turn off SSL, `require` to enforce it |
 | `CLIENT_URL` | `*` | Allowed CORS origin |
 
 ---
@@ -118,7 +143,7 @@ node server/src/index.js --stdio
 ```
 
 ### 🔔 Persistent Notification Center
-Unlike standard message bridges, this server maintains a **Persistent Activity Log** in SQLite. Agents can "catch up" on missed activity using the `get_recent_notifications` tool or subscribe to real-time `resources/updated` alerts.
+Unlike standard message bridges, this server maintains a **Persistent Activity Log** in PostgreSQL. Agents can "catch up" on missed activity using the `get_recent_notifications` tool or subscribe to real-time `resources/updated` alerts.
 
 ### 🛠️ Agent Tool Suite
 Agents gain access to 15+ specialized tools, including:

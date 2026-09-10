@@ -51,7 +51,7 @@ async function moveBoardToGroup(boardId, groupId) {
 
 async function addColumn(boardId, title) {
   const id = uuidv4();
-  const rows = await dbAll('SELECT MAX(position) as maxPos FROM columns WHERE board_id = ?', [boardId]);
+  const rows = await dbAll('SELECT COALESCE(MAX(position), -1) as "maxPos" FROM columns WHERE board_id = ?', [boardId]);
   const position = (rows[0]?.maxPos ?? -1) + 1;
   await dbRun('INSERT INTO columns (id, board_id, title, position) VALUES (?, ?, ?, ?)', [id, boardId, title, position]);
   return dbGet('SELECT * FROM columns WHERE id = ?', [id]);
@@ -65,7 +65,7 @@ async function deleteColumn(columnId) {
 
 async function addCard(columnId, content, author, imageUrl) {
   const id = uuidv4();
-  const rows = await dbAll('SELECT MAX(position) as maxPos FROM cards WHERE column_id = ?', [columnId]);
+  const rows = await dbAll('SELECT COALESCE(MAX(position), -1) as "maxPos" FROM cards WHERE column_id = ?', [columnId]);
   const position = (rows[0]?.maxPos ?? -1) + 1;
   const authorValue = author && author.trim() ? author.trim() : null;
   const imageValue = imageUrl && imageUrl.trim() ? imageUrl.trim() : null;
@@ -175,8 +175,7 @@ async function getAppSettings() {
 }
 
 async function updateAppSetting(key, value) {
-  // Use INSERT OR REPLACE for SQLite upsert
-  await dbRun('INSERT OR REPLACE INTO app_settings (key, value) VALUES (?, ?)', [key, value]);
+  await dbRun('INSERT INTO app_settings (key, value) VALUES (?, ?) ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value', [key, value]);
   return { key, value };
 }
 
@@ -207,8 +206,8 @@ async function markNotificationAsRead(id) {
 
 async function subscribeToBoardAlerts(boardId, clientId, alertType = 'all') {
   const id = uuidv4();
-  await dbRun('INSERT OR REPLACE INTO mcp_subscriptions (id, board_id, client_id, alert_type) VALUES (?, ?, ?, ?)', [id, boardId, clientId, alertType]);
-  return dbGet('SELECT * FROM mcp_subscriptions WHERE id = ?', [id]);
+  await dbRun('INSERT INTO mcp_subscriptions (id, board_id, client_id, alert_type) VALUES (?, ?, ?, ?) ON CONFLICT (board_id, client_id) DO UPDATE SET alert_type = EXCLUDED.alert_type', [id, boardId, clientId, alertType]);
+  return dbGet('SELECT * FROM mcp_subscriptions WHERE board_id = ? AND client_id = ?', [boardId, clientId]);
 }
 
 module.exports = {
