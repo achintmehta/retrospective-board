@@ -449,9 +449,9 @@ io.on('connection', (socket) => {
 
   // ── Boards ──────────────────────────────────────────────────────────────────
 
-  socket.on('create_board', async ({ name, theme }, callback) => {
+  socket.on('create_board', async ({ name, theme, template }, callback) => {
     try {
-      const board = await createBoard(name || 'Untitled Retro', theme);
+      const board = await createBoard(name || 'Untitled Retro', theme, template);
       io.emit('board_created', board);
       notifyResourceListChanged();
       callback?.({ ok: true, board });

@@ -5,6 +5,7 @@ import { useSocket } from '../contexts/SocketContext';
 import { useSettings } from '../contexts/SettingsContext';
 import SettingsModal from '../components/SettingsModal';
 import ThemePicker from '../components/ThemePicker';
+import TemplatePicker from '../components/TemplatePicker';
 import './HomePage.css';
 
 const SERVER_URL = import.meta.env.VITE_SERVER_URL || '';
@@ -19,6 +20,7 @@ export default function HomePage() {
   const [newGroupName, setNewGroupName] = useState('');
   const [creating, setCreating] = useState(false);
   const [selectedTheme, setSelectedTheme] = useState('classic-dark');
+  const [selectedTemplate, setSelectedTemplate] = useState('standard');
   const [showSettings, setShowSettings] = useState(false);
   const { settings, updateSettings } = useSettings();
 
@@ -73,11 +75,12 @@ export default function HomePage() {
     const name = newBoardName.trim() || 'Retro Board';
     if (!socket.current) return;
     setCreating(true);
-    socket.current.emit('create_board', { name, theme: selectedTheme }, ({ ok, board }) => {
+    socket.current.emit('create_board', { name, theme: selectedTheme, template: selectedTemplate }, ({ ok, board }) => {
       setCreating(false);
       if (ok) {
         setNewBoardName('');
         setSelectedTheme('classic-dark');
+        setSelectedTemplate('standard');
         navigate(`/board/${board.id}`);
       }
     });
@@ -208,6 +211,11 @@ export default function HomePage() {
                 <ThemePicker
                   selectedTheme={selectedTheme}
                   onSelect={setSelectedTheme}
+                  buttonType="button"
+                />
+                <TemplatePicker
+                  selectedTemplate={selectedTemplate}
+                  onSelect={setSelectedTemplate}
                   buttonType="button"
                 />
               </form>

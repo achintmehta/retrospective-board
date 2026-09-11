@@ -18,42 +18,54 @@ const VALID_THEMES = [
 ];
 
 const DEFAULT_COLUMN_COLORS = {
-  'classic-dark':       ['#22c55e', '#f59e0b', '#6366f1'],
-  'classic-light':      ['#16a34a', '#d97706', '#4f46e5'],
-  'cyberpunk-dark':     ['#00ffcc', '#ff00ff', '#00bfff'],
-  'cyberpunk-light':    ['#00b4dc', '#e000a0', '#0070cc'],
-  'vaporwave-dark':     ['#ff6ec7', '#b48eff', '#72efdd'],
-  'vaporwave-light':    ['#d050c0', '#8040e0', '#40b8c0'],
-  'sunset-dark':        ['#ff6b35', '#ff4477', '#ffaa00'],
-  'sunset-light':       ['#e05020', '#c03060', '#d08000'],
-  'desert-dark':        ['#e8a020', '#c06030', '#80a040'],
-  'desert-light':       ['#c07810', '#a04820', '#608030'],
-  'artnouveau-dark':    ['#8fbc5a', '#c8a96e', '#7da87b'],
-  'artnouveau-light':   ['#5a8030', '#a07030', '#407850'],
-  'renaissance-dark':   ['#c4862a', '#a63228', '#6b4c9a'],
-  'renaissance-light':  ['#a06010', '#802010', '#503080'],
-  'highcontrast-dark':  ['#ffff00', '#ff4444', '#44ffff'],
-  'highcontrast-light': ['#0000cc', '#cc0000', '#007700'],
-  'gruvbox-dark':       ['#98971a', '#d79921', '#458588'],
-  'gruvbox-light':      ['#79740e', '#b57614', '#076678'],
-  'nord-dark':          ['#a3be8c', '#ebcb8b', '#88c0d0'],
-  'nord-light':         ['#4c7a3c', '#9a7a1c', '#2a6a88'],
-  'solarized-dark':     ['#859900', '#b58900', '#268bd2'],
-  'solarized-light':    ['#859900', '#b58900', '#268bd2'],
+  'classic-dark':       ['#22c55e', '#f59e0b', '#6366f1', '#ec4899', '#06b6d4', '#f97316'],
+  'classic-light':      ['#16a34a', '#d97706', '#4f46e5', '#db2777', '#0891b2', '#ea580c'],
+  'cyberpunk-dark':     ['#00ffcc', '#ff00ff', '#00bfff', '#ffff00', '#ff6600', '#aa00ff'],
+  'cyberpunk-light':    ['#00b4dc', '#e000a0', '#0070cc', '#b8a000', '#cc4400', '#7700cc'],
+  'vaporwave-dark':     ['#ff6ec7', '#b48eff', '#72efdd', '#ff9de2', '#c8b6ff', '#a0f0e0'],
+  'vaporwave-light':    ['#d050c0', '#8040e0', '#40b8c0', '#c060a0', '#6030c0', '#309090'],
+  'sunset-dark':        ['#ff6b35', '#ff4477', '#ffaa00', '#ff8c42', '#e63950', '#ffd166'],
+  'sunset-light':       ['#e05020', '#c03060', '#d08000', '#c06030', '#a02050', '#b06000'],
+  'desert-dark':        ['#e8a020', '#c06030', '#80a040', '#d4802a', '#a04830', '#608830'],
+  'desert-light':       ['#c07810', '#a04820', '#608030', '#b06010', '#884018', '#506828'],
+  'artnouveau-dark':    ['#8fbc5a', '#c8a96e', '#7da87b', '#b8a040', '#9a7060', '#5a9868'],
+  'artnouveau-light':   ['#5a8030', '#a07030', '#407850', '#887020', '#805040', '#306840'],
+  'renaissance-dark':   ['#c4862a', '#a63228', '#6b4c9a', '#b8701a', '#8a2018', '#5a3888'],
+  'renaissance-light':  ['#a06010', '#802010', '#503080', '#906000', '#701808', '#402870'],
+  'highcontrast-dark':  ['#ffff00', '#ff4444', '#44ffff', '#ff8800', '#88ff00', '#ff44ff'],
+  'highcontrast-light': ['#0000cc', '#cc0000', '#007700', '#884400', '#005500', '#880088'],
+  'gruvbox-dark':       ['#98971a', '#d79921', '#458588', '#b16286', '#689d6a', '#cc241d'],
+  'gruvbox-light':      ['#79740e', '#b57614', '#076678', '#8f3f71', '#427b58', '#9d0006'],
+  'nord-dark':          ['#a3be8c', '#ebcb8b', '#88c0d0', '#b48ead', '#81a1c1', '#bf616a'],
+  'nord-light':         ['#4c7a3c', '#9a7a1c', '#2a6a88', '#7a5a88', '#3a6080', '#8a3040'],
+  'solarized-dark':     ['#859900', '#b58900', '#268bd2', '#d33682', '#2aa198', '#cb4b16'],
+  'solarized-light':    ['#859900', '#b58900', '#268bd2', '#d33682', '#2aa198', '#cb4b16'],
+};
+
+const BOARD_TEMPLATES = {
+  'standard':            ['Went Well', 'Needs Improvement', 'Action Items'],
+  '4ls':                 ['Liked', 'Learned', 'Lacked', 'Longed For'],
+  'start-stop-continue': ['Start', 'Stop', 'Continue'],
+  'mad-sad-glad':        ['Mad', 'Sad', 'Glad'],
+  'kalm':                ['Keep', 'Add', 'Less', 'More'],
+  'sailboat':            ['Anchors', 'Wind', 'Rocks', 'Island'],
+  'rose-bud-thorn':      ['Rose', 'Bud', 'Thorn'],
+  'empty':               [],
 };
 
 // --- Board Handlers ---
 
-async function createBoard(name, theme = 'default') {
+async function createBoard(name, theme = 'default', template = 'standard') {
   const id = uuidv4();
   const now = new Date().toISOString();
   const validTheme = VALID_THEMES.includes(theme) ? theme : 'classic-dark';
   await dbRun('INSERT INTO boards (id, name, created_at, theme) VALUES (?, ?, ?, ?)', [id, name, now, validTheme]);
 
-  const [c1, c2, c3] = DEFAULT_COLUMN_COLORS[validTheme] || DEFAULT_COLUMN_COLORS['classic-dark'];
-  await addColumn(id, 'Went Well', c1);
-  await addColumn(id, 'Needs Improvement', c2);
-  await addColumn(id, 'Action Items', c3);
+  const colors = DEFAULT_COLUMN_COLORS[validTheme] || DEFAULT_COLUMN_COLORS['classic-dark'];
+  const columns = BOARD_TEMPLATES[template] ?? BOARD_TEMPLATES['standard'];
+  for (let i = 0; i < columns.length; i++) {
+    await addColumn(id, columns[i], colors[i % colors.length]);
+  }
 
   return dbGet('SELECT * FROM boards WHERE id = ?', [id]);
 }
