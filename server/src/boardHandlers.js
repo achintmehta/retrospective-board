@@ -1,53 +1,56 @@
 const { dbAll, dbGet, dbRun } = require('./db/database');
 const { v4: uuidv4 } = require('uuid');
 
+// --- Shared Constants ---
+
+const VALID_THEMES = [
+  'classic-dark', 'classic-light',
+  'cyberpunk-dark', 'cyberpunk-light',
+  'vaporwave-dark', 'vaporwave-light',
+  'sunset-dark', 'sunset-light',
+  'desert-dark', 'desert-light',
+  'artnouveau-dark', 'artnouveau-light',
+  'renaissance-dark', 'renaissance-light',
+  'highcontrast-dark', 'highcontrast-light',
+  'gruvbox-dark', 'gruvbox-light',
+  'nord-dark', 'nord-light',
+  'solarized-dark', 'solarized-light',
+];
+
+const DEFAULT_COLUMN_COLORS = {
+  'classic-dark':       ['#22c55e', '#f59e0b', '#6366f1'],
+  'classic-light':      ['#16a34a', '#d97706', '#4f46e5'],
+  'cyberpunk-dark':     ['#00ffcc', '#ff00ff', '#00bfff'],
+  'cyberpunk-light':    ['#00b4dc', '#e000a0', '#0070cc'],
+  'vaporwave-dark':     ['#ff6ec7', '#b48eff', '#72efdd'],
+  'vaporwave-light':    ['#d050c0', '#8040e0', '#40b8c0'],
+  'sunset-dark':        ['#ff6b35', '#ff4477', '#ffaa00'],
+  'sunset-light':       ['#e05020', '#c03060', '#d08000'],
+  'desert-dark':        ['#e8a020', '#c06030', '#80a040'],
+  'desert-light':       ['#c07810', '#a04820', '#608030'],
+  'artnouveau-dark':    ['#8fbc5a', '#c8a96e', '#7da87b'],
+  'artnouveau-light':   ['#5a8030', '#a07030', '#407850'],
+  'renaissance-dark':   ['#c4862a', '#a63228', '#6b4c9a'],
+  'renaissance-light':  ['#a06010', '#802010', '#503080'],
+  'highcontrast-dark':  ['#ffff00', '#ff4444', '#44ffff'],
+  'highcontrast-light': ['#0000cc', '#cc0000', '#007700'],
+  'gruvbox-dark':       ['#98971a', '#d79921', '#458588'],
+  'gruvbox-light':      ['#79740e', '#b57614', '#076678'],
+  'nord-dark':          ['#a3be8c', '#ebcb8b', '#88c0d0'],
+  'nord-light':         ['#4c7a3c', '#9a7a1c', '#2a6a88'],
+  'solarized-dark':     ['#859900', '#b58900', '#268bd2'],
+  'solarized-light':    ['#859900', '#b58900', '#268bd2'],
+};
+
 // --- Board Handlers ---
 
 async function createBoard(name, theme = 'default') {
   const id = uuidv4();
   const now = new Date().toISOString();
-  const VALID_THEMES = [
-    'classic-dark', 'classic-light',
-    'cyberpunk-dark', 'cyberpunk-light',
-    'vaporwave-dark', 'vaporwave-light',
-    'sunset-dark', 'sunset-light',
-    'desert-dark', 'desert-light',
-    'artnouveau-dark', 'artnouveau-light',
-    'renaissance-dark', 'renaissance-light',
-    'highcontrast-dark', 'highcontrast-light',
-    'gruvbox-dark', 'gruvbox-light',
-    'nord-dark', 'nord-light',
-    'solarized-dark', 'solarized-light',
-  ];
   const validTheme = VALID_THEMES.includes(theme) ? theme : 'classic-dark';
   await dbRun('INSERT INTO boards (id, name, created_at, theme) VALUES (?, ?, ?, ?)', [id, name, now, validTheme]);
 
-  // Default column tint colors tuned per theme
-  const defaultColors = {
-    'classic-dark':       ['#22c55e', '#f59e0b', '#6366f1'],
-    'classic-light':      ['#16a34a', '#d97706', '#4f46e5'],
-    'cyberpunk-dark':     ['#00ffcc', '#ff00ff', '#00bfff'],
-    'cyberpunk-light':    ['#00b4dc', '#e000a0', '#0070cc'],
-    'vaporwave-dark':     ['#ff6ec7', '#b48eff', '#72efdd'],
-    'vaporwave-light':    ['#d050c0', '#8040e0', '#40b8c0'],
-    'sunset-dark':        ['#ff6b35', '#ff4477', '#ffaa00'],
-    'sunset-light':       ['#e05020', '#c03060', '#d08000'],
-    'desert-dark':        ['#e8a020', '#c06030', '#80a040'],
-    'desert-light':       ['#c07810', '#a04820', '#608030'],
-    'artnouveau-dark':    ['#8fbc5a', '#c8a96e', '#7da87b'],
-    'artnouveau-light':   ['#5a8030', '#a07030', '#407850'],
-    'renaissance-dark':   ['#c4862a', '#a63228', '#6b4c9a'],
-    'renaissance-light':  ['#a06010', '#802010', '#503080'],
-    'highcontrast-dark':  ['#ffff00', '#ff4444', '#44ffff'],
-    'highcontrast-light': ['#0000cc', '#cc0000', '#007700'],
-    'gruvbox-dark':       ['#98971a', '#d79921', '#458588'],
-    'gruvbox-light':      ['#79740e', '#b57614', '#076678'],
-    'nord-dark':          ['#a3be8c', '#ebcb8b', '#88c0d0'],
-    'nord-light':         ['#4c7a3c', '#9a7a1c', '#2a6a88'],
-    'solarized-dark':     ['#859900', '#b58900', '#268bd2'],
-    'solarized-light':    ['#859900', '#b58900', '#268bd2'],
-  };
-  const [c1, c2, c3] = defaultColors[validTheme] || defaultColors['classic-dark'];
+  const [c1, c2, c3] = DEFAULT_COLUMN_COLORS[validTheme] || DEFAULT_COLUMN_COLORS['classic-dark'];
   await addColumn(id, 'Went Well', c1);
   await addColumn(id, 'Needs Improvement', c2);
   await addColumn(id, 'Action Items', c3);
@@ -105,6 +108,25 @@ async function updateColumnColor(columnId, color) {
   const colorValue = color && color.trim() ? color.trim() : null;
   await dbRun('UPDATE columns SET color = ? WHERE id = ?', [colorValue, columnId]);
   return dbGet('SELECT * FROM columns WHERE id = ?', [columnId]);
+}
+
+async function renameColumn(columnId, title) {
+  const trimmed = title && title.trim();
+  if (!trimmed) return dbGet('SELECT * FROM columns WHERE id = ?', [columnId]);
+  await dbRun('UPDATE columns SET title = ? WHERE id = ?', [trimmed, columnId]);
+  return dbGet('SELECT * FROM columns WHERE id = ?', [columnId]);
+}
+
+async function updateBoardTheme(boardId, theme) {
+  const validTheme = VALID_THEMES.includes(theme) ? theme : 'classic-dark';
+  await dbRun('UPDATE boards SET theme = ? WHERE id = ?', [validTheme, boardId]);
+  const palette = DEFAULT_COLUMN_COLORS[validTheme] || DEFAULT_COLUMN_COLORS['classic-dark'];
+  const columns = await dbAll('SELECT id, position FROM columns WHERE board_id = ? ORDER BY position ASC', [boardId]);
+  for (const col of columns) {
+    const color = palette[col.position % 3];
+    await dbRun('UPDATE columns SET color = ? WHERE id = ?', [color, col.id]);
+  }
+  return dbAll('SELECT * FROM columns WHERE board_id = ? ORDER BY position ASC', [boardId]);
 }
 
 // --- Card Handlers ---
@@ -258,7 +280,7 @@ async function subscribeToBoardAlerts(boardId, clientId, alertType = 'all') {
 
 module.exports = {
   createBoard, deleteBoard, listBoards,
-  addColumn, deleteColumn, updateColumnColor,
+  addColumn, deleteColumn, updateColumnColor, renameColumn, updateBoardTheme,
   addCard, moveCard, deleteCard,
   addReply, deleteReply,
   addReaction, removeReaction,

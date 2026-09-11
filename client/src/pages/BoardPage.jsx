@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { DragDropContext } from '@hello-pangea/dnd';
 import { useBoard } from '../hooks/useBoard';
@@ -6,16 +6,19 @@ import { useSocket } from '../contexts/SocketContext';
 import Column from '../components/Column';
 import AddColumnForm from '../components/AddColumnForm';
 import BoardExportModal from '../components/BoardExportModal';
+import ThemePicker from '../components/ThemePicker';
 import './BoardPage.css';
 
 export default function BoardPage() {
   const { boardId } = useParams();
   const navigate = useNavigate();
   const { connected } = useSocket();
-  const { board, setBoard, loading, error, addColumn, deleteColumn, updateColumnColor, addCard, moveCard, deleteCard, toggleReaction, addReply, deleteReply } = useBoard(boardId);
+  const { board, setBoard, loading, error, addColumn, deleteColumn, updateColumnColor, renameColumn, updateBoardTheme, addCard, moveCard, deleteCard, toggleReaction, addReply, deleteReply } = useBoard(boardId);
 
   const [showNamePrompt, setShowNamePrompt] = useState(false);
   const [showExportModal, setShowExportModal] = useState(false);
+  const [showThemePicker, setShowThemePicker] = useState(false);
+  const themePickerRef = useRef(null);
   const [tempName, setTempName] = useState('');
   const [username, setUsername] = useState(localStorage.getItem('retro_username') || '');
 
@@ -65,6 +68,25 @@ export default function BoardPage() {
     moveCard(draggableId, destination.droppableId, destination.index);
   };
 
+  const LEGACY_THEME_MAP = {
+    'default': 'classic-dark', 'light': 'classic-light',
+    'cyberpunk': 'cyberpunk-dark', 'vaporwave': 'vaporwave-dark',
+    'art-nouveau': 'artnouveau-dark', 'renaissance': 'renaissance-dark',
+  };
+  const resolvedTheme = LEGACY_THEME_MAP[board?.theme] || board?.theme || 'classic-dark';
+  const themeClass = `theme-${resolvedTheme}`;
+
+  useEffect(() => {
+    if (!showThemePicker) return;
+    const handler = (e) => {
+      if (themePickerRef.current && !themePickerRef.current.contains(e.target)) {
+        setShowThemePicker(false);
+      }
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, [showThemePicker]);
+
   if (loading) {
     return (
       <div className="board-loading">
@@ -82,8 +104,6 @@ export default function BoardPage() {
       </div>
     );
   }
-
-  const themeClass = `theme-${board.theme || 'classic-dark'}`;
 
   return (
     <div className={`board-page ${themeClass}`}>
@@ -128,8 +148,28 @@ export default function BoardPage() {
           </div>
         </div>
         <div className="header-right">
-          <button 
-            className="btn btn-ghost export-header-btn" 
+          <div className="theme-picker-dropdown-wrap" ref={themePickerRef}>
+            <button
+              className="btn btn-ghost export-header-btn"
+              onClick={() => setShowThemePicker((v) => !v)}
+              title="Change board theme"
+            >
+              <span>🎨</span>
+              <span className="export-btn-label">Theme</span>
+            </button>
+            {showThemePicker && (
+              <div className="theme-picker-dropdown">
+                <ThemePicker
+                  selectedTheme={resolvedTheme}
+                  onSelect={(theme) => { updateBoardTheme(theme); setShowThemePicker(false); }}
+                  collapsible={false}
+                  buttonType="button"
+                />
+              </div>
+            )}
+          </div>
+          <button
+            className="btn btn-ghost export-header-btn"
             onClick={() => setShowExportModal(true)}
             title="Export Board"
           >
@@ -176,6 +216,7 @@ export default function BoardPage() {
               onDeleteCard={deleteCard}
               onDeleteColumn={deleteColumn}
               onUpdateColor={updateColumnColor}
+              onRenameColumn={renameColumn}
               onToggleReaction={toggleReaction}
               onAddReply={addReply}
               onDeleteReply={deleteReply}

@@ -144,10 +144,38 @@ export function useBoard(boardId) {
       });
     };
 
+    const onColumnRenamed = ({ columnId, title }) => {
+      setBoard((prev) => {
+        if (!prev) return prev;
+        return {
+          ...prev,
+          columns: prev.columns.map((col) =>
+            col.id === columnId ? { ...col, title } : col
+          ),
+        };
+      });
+    };
+
+    const onBoardThemeUpdated = ({ theme, columns }) => {
+      setBoard((prev) => {
+        if (!prev) return prev;
+        const colMap = Object.fromEntries(columns.map((c) => [c.id, c]));
+        return {
+          ...prev,
+          theme,
+          columns: prev.columns.map((col) =>
+            colMap[col.id] ? { ...col, color: colMap[col.id].color } : col
+          ),
+        };
+      });
+    };
+
     s.on('board_state', onBoardState);
     s.on('column_added', onColumnAdded);
     s.on('column_deleted', onColumnDeleted);
     s.on('column_color_updated', onColumnColorUpdated);
+    s.on('column_renamed', onColumnRenamed);
+    s.on('board_theme_updated', onBoardThemeUpdated);
     s.on('card_added', onCardAdded);
     s.on('card_deleted', onCardDeleted);
     s.on('reply_added', onReplyAdded);
@@ -161,6 +189,8 @@ export function useBoard(boardId) {
       s.off('column_added', onColumnAdded);
       s.off('column_deleted', onColumnDeleted);
       s.off('column_color_updated', onColumnColorUpdated);
+      s.off('column_renamed', onColumnRenamed);
+      s.off('board_theme_updated', onBoardThemeUpdated);
       s.off('card_added', onCardAdded);
       s.off('card_deleted', onCardDeleted);
       s.off('reply_added', onReplyAdded);
@@ -190,6 +220,24 @@ export function useBoard(boardId) {
       };
     });
     socket.current?.emit('update_column_color', { boardId, columnId, color });
+  }, [boardId, socket]);
+
+  const renameColumn = useCallback((columnId, title) => {
+    if (!title || !title.trim()) return;
+    setBoard((prev) => {
+      if (!prev) return prev;
+      return {
+        ...prev,
+        columns: prev.columns.map((col) =>
+          col.id === columnId ? { ...col, title: title.trim() } : col
+        ),
+      };
+    });
+    socket.current?.emit('rename_column', { boardId, columnId, title: title.trim() });
+  }, [boardId, socket]);
+
+  const updateBoardTheme = useCallback((theme) => {
+    socket.current?.emit('update_board_theme', { boardId, theme });
   }, [boardId, socket]);
 
   const addCard = useCallback((columnId, content, author, imageUrl) => {
@@ -318,5 +366,5 @@ export function useBoard(boardId) {
     socket.current?.emit(event, { boardId, cardId, emoji });
   }, [boardId, socket]);
 
-  return { board, setBoard, loading, error, addColumn, deleteColumn, updateColumnColor, addCard, moveCard, deleteCard, addReply, deleteReply, toggleReaction };
+  return { board, setBoard, loading, error, addColumn, deleteColumn, updateColumnColor, renameColumn, updateBoardTheme, addCard, moveCard, deleteCard, addReply, deleteReply, toggleReaction };
 }

@@ -9,7 +9,7 @@ require('./db/database');
 
 const {
   createBoard, deleteBoard, listBoards,
-  addColumn, deleteColumn, updateColumnColor,
+  addColumn, deleteColumn, updateColumnColor, renameColumn, updateBoardTheme,
   addCard, moveCard, deleteCard,
   addReply, deleteReply,
   addReaction, removeReaction,
@@ -486,6 +486,26 @@ io.on('connection', (socket) => {
       const column = await updateColumnColor(columnId, color);
       io.to(`board:${boardId}`).emit('column_color_updated', { columnId, color: column.color });
       callback?.({ ok: true, column });
+    } catch (err) {
+      callback?.({ ok: false, error: err.message });
+    }
+  });
+
+  socket.on('rename_column', async ({ boardId, columnId, title }, callback) => {
+    try {
+      const column = await renameColumn(columnId, title);
+      io.to(`board:${boardId}`).emit('column_renamed', { columnId, title: column.title });
+      callback?.({ ok: true, column });
+    } catch (err) {
+      callback?.({ ok: false, error: err.message });
+    }
+  });
+
+  socket.on('update_board_theme', async ({ boardId, theme }, callback) => {
+    try {
+      const columns = await updateBoardTheme(boardId, theme);
+      io.to(`board:${boardId}`).emit('board_theme_updated', { boardId, theme, columns });
+      callback?.({ ok: true, theme, columns });
     } catch (err) {
       callback?.({ ok: false, error: err.message });
     }

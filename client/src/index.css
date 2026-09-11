@@ -24,7 +24,9 @@
 
   /* Theme token fallbacks (default theme values) */
   --bg-page: #0f1117;
-  --bg-gradient: linear-gradient(135deg, #0f1117 0%, #1a1d27 50%, #12151e 100%);
+  --bg-gradient: linear-gradient(160deg, #070a12 0%, #0f1117 30%, #1a1d27 65%, #0d1020 100%);
+  --bg-texture: radial-gradient(circle, rgba(255,255,255,0.018) 1px, transparent 1px);
+  --bg-texture-size: 28px 28px;
   --glass-bg: rgba(30, 33, 48, 0.75);
   --glass-border: rgba(255, 255, 255, 0.07);
   --glass-blur: 12px;
@@ -45,8 +47,9 @@
 
 /* ── Classic ── */
 .theme-classic-dark {
-  --bg-page: #0f1117;
-  --bg-gradient: linear-gradient(135deg, #0f1117 0%, #1a1d27 50%, #12151e 100%);
+  --bg-gradient: linear-gradient(160deg, #070a12 0%, #0f1117 30%, #1a1d27 65%, #0d1020 100%);
+  --bg-texture: radial-gradient(circle, rgba(255,255,255,0.018) 1px, transparent 1px);
+  --bg-texture-size: 28px 28px;
   --glass-bg: rgba(30, 33, 48, 0.78);
   --glass-border: rgba(255, 255, 255, 0.07);
   --glass-blur: 12px;
@@ -63,8 +66,9 @@
 }
 
 .theme-classic-light {
-  --bg-page: #f0f2f7;
-  --bg-gradient: linear-gradient(135deg, #e8ecf5 0%, #f5f7fb 50%, #edf0f8 100%);
+  --bg-gradient: linear-gradient(160deg, #c8d1e4 0%, #d4daea 30%, #e2e8f4 65%, #d6daea 100%);
+  --bg-texture: radial-gradient(circle, rgba(0,0,0,0.025) 1px, transparent 1px);
+  --bg-texture-size: 24px 24px;
   --glass-bg: rgba(255, 255, 255, 0.72);
   --glass-border: rgba(0, 0, 0, 0.08);
   --glass-blur: 16px;
@@ -82,8 +86,9 @@
 
 /* ── Cyberpunk ── */
 .theme-cyberpunk-dark {
-  --bg-page: #0a0010;
-  --bg-gradient: radial-gradient(ellipse at 20% 50%, #1a0030 0%, #0a0010 40%, #001020 100%);
+  --bg-gradient: radial-gradient(ellipse at 15% 40%, #2a0050 0%, #0a0010 45%, #001428 100%);
+  --bg-texture: repeating-linear-gradient(0deg, transparent, transparent 3px, rgba(0,255,255,0.03) 3px, rgba(0,255,255,0.03) 4px);
+  --bg-texture-size: auto;
   --glass-bg: rgba(10, 0, 30, 0.72);
   --glass-border: rgba(0, 255, 255, 0.18);
   --glass-blur: 10px;
@@ -100,8 +105,9 @@
 }
 
 .theme-cyberpunk-light {
-  --bg-page: #e8f4ff;
-  --bg-gradient: linear-gradient(135deg, #dff0ff 0%, #eef8ff 50%, #e0f0ff 100%);
+  --bg-gradient: linear-gradient(160deg, #aed6f5 0%, #c8e2f8 40%, #daeeff 100%);
+  --bg-texture: repeating-linear-gradient(0deg, transparent, transparent 3px, rgba(0,140,200,0.04) 3px, rgba(0,140,200,0.04) 4px);
+  --bg-texture-size: auto;
   --glass-bg: rgba(220, 240, 255, 0.80);
   --glass-border: rgba(0, 180, 220, 0.25);
   --glass-blur: 14px;
@@ -119,8 +125,9 @@
 
 /* ── Vaporwave ── */
 .theme-vaporwave-dark {
-  --bg-page: #1a0533;
-  --bg-gradient: linear-gradient(160deg, #1a0533 0%, #2d0d5c 35%, #0d1a4a 70%, #1a0533 100%);
+  --bg-gradient: linear-gradient(170deg, #120228 0%, #2d0d5c 30%, #0d1a4a 60%, #1a0533 85%, #2a0830 100%);
+  --bg-texture: repeating-linear-gradient(45deg, transparent, transparent 18px, rgba(255,100,220,0.03) 18px, rgba(255,100,220,0.03) 19px), repeating-linear-gradient(-45deg, transparent, transparent 18px, rgba(100,80,255,0.03) 18px, rgba(100,80,255,0.03) 19px);
+  --bg-texture-size: auto;
   --glass-bg: rgba(40, 10, 80, 0.68);
   --glass-border: rgba(255, 100, 220, 0.2);
   --glass-blur: 14px;
@@ -137,8 +144,9 @@
 }
 
 .theme-vaporwave-light {
-  --bg-page: #fdf0ff;
-  --bg-gradient: linear-gradient(150deg, #fce8ff 0%, #f5e6ff 40%, #ede0ff 100%);
+  --bg-gradient: linear-gradient(150deg, #e4c0f8 0%, #ecd4f8 25%, #e2d0f5 60%, #d4c4f0 100%);
+  --bg-texture: repeating-linear-gradient(45deg, transparent, transparent 18px, rgba(180,80,200,0.04) 18px, rgba(180,80,200,0.04) 19px), repeating-linear-gradient(-45deg, transparent, transparent 18px, rgba(220,80,160,0.03) 18px, rgba(220,80,160,0.03) 19px);
+  --bg-texture-size: auto;
   --glass-bg: rgba(255, 240, 255, 0.78);
   --glass-border: rgba(200, 80, 200, 0.18);
   --glass-blur: 16px;
@@ -156,8 +164,9 @@
 
 /* ── Sunset ── */
 .theme-sunset-dark {
-  --bg-page: #1a0800;
-  --bg-gradient: linear-gradient(160deg, #1a0800 0%, #2d1200 30%, #1a0a10 70%, #0d0818 100%);
+  --bg-gradient: linear-gradient(170deg, #0d0010 0%, #1a0800 20%, #3d1500 45%, #1a0a10 70%, #0d0818 100%);
+  --bg-texture: none;
+  --bg-texture-size: auto;
   --glass-bg: rgba(40, 15, 5, 0.75);
   --glass-border: rgba(255, 140, 60, 0.2);
   --glass-blur: 12px;
@@ -174,8 +183,9 @@
 }
 
 .theme-sunset-light {
-  --bg-page: #fff8f0;
-  --bg-gradient: linear-gradient(150deg, #fff0e0 0%, #fff8f0 50%, #ffeedd 100%);
+  --bg-gradient: linear-gradient(160deg, #f0c89a 0%, #f8dfc0 30%, #f5e8d5 60%, #f0dcc8 85%, #e8ccb4 100%);
+  --bg-texture: none;
+  --bg-texture-size: auto;
   --glass-bg: rgba(255, 245, 235, 0.80);
   --glass-border: rgba(220, 100, 40, 0.18);
   --glass-blur: 14px;
@@ -193,8 +203,9 @@
 
 /* ── Desert ── */
 .theme-desert-dark {
-  --bg-page: #1a1200;
-  --bg-gradient: linear-gradient(145deg, #1a1200 0%, #2d2000 40%, #1a1500 100%);
+  --bg-gradient: linear-gradient(155deg, #0d0a00 0%, #1a1200 25%, #2d2000 55%, #1a1500 80%, #100e00 100%);
+  --bg-texture: repeating-linear-gradient(60deg, transparent, transparent 30px, rgba(200,160,80,0.025) 30px, rgba(200,160,80,0.025) 31px);
+  --bg-texture-size: auto;
   --glass-bg: rgba(38, 28, 5, 0.78);
   --glass-border: rgba(200, 160, 80, 0.2);
   --glass-blur: 12px;
@@ -211,8 +222,9 @@
 }
 
 .theme-desert-light {
-  --bg-page: #fdf8ef;
-  --bg-gradient: linear-gradient(145deg, #faf2df 0%, #fdf8ef 50%, #f5ead0 100%);
+  --bg-gradient: linear-gradient(155deg, #ddd0a0 0%, #ece0c0 25%, #ede4cc 55%, #e4d4b0 80%, #d8c898 100%);
+  --bg-texture: repeating-linear-gradient(60deg, transparent, transparent 30px, rgba(160,120,40,0.035) 30px, rgba(160,120,40,0.035) 31px);
+  --bg-texture-size: auto;
   --glass-bg: rgba(253, 245, 225, 0.82);
   --glass-border: rgba(180, 130, 50, 0.18);
   --glass-blur: 14px;
@@ -230,8 +242,9 @@
 
 /* ── Art Nouveau ── */
 .theme-artnouveau-dark {
-  --bg-page: #0e1a0f;
-  --bg-gradient: linear-gradient(150deg, #0e1a0f 0%, #1a2e1a 40%, #0f1c14 100%);
+  --bg-gradient: linear-gradient(155deg, #050d06 0%, #0e1a0f 25%, #1a2e1a 55%, #0f1c14 80%, #081209 100%);
+  --bg-texture: repeating-linear-gradient(30deg, transparent, transparent 22px, rgba(180,150,80,0.04) 22px, rgba(180,150,80,0.04) 23px), repeating-linear-gradient(150deg, transparent, transparent 22px, rgba(100,140,80,0.03) 22px, rgba(100,140,80,0.03) 23px);
+  --bg-texture-size: auto;
   --glass-bg: rgba(20, 36, 20, 0.78);
   --glass-border: rgba(180, 150, 80, 0.2);
   --glass-blur: 14px;
@@ -248,8 +261,9 @@
 }
 
 .theme-artnouveau-light {
-  --bg-page: #f8f4e8;
-  --bg-gradient: linear-gradient(150deg, #f5f0e0 0%, #f8f4e8 50%, #f0e8cc 100%);
+  --bg-gradient: linear-gradient(155deg, #d4c898 0%, #e0d8c0 25%, #e4dece 55%, #dcd0b0 80%, #d0c298 100%);
+  --bg-texture: repeating-linear-gradient(30deg, transparent, transparent 22px, rgba(140,110,40,0.05) 22px, rgba(140,110,40,0.05) 23px), repeating-linear-gradient(150deg, transparent, transparent 22px, rgba(80,110,60,0.04) 22px, rgba(80,110,60,0.04) 23px);
+  --bg-texture-size: auto;
   --glass-bg: rgba(252, 248, 235, 0.82);
   --glass-border: rgba(140, 110, 40, 0.18);
   --glass-blur: 14px;
@@ -267,8 +281,9 @@
 
 /* ── Renaissance ── */
 .theme-renaissance-dark {
-  --bg-page: #1a0808;
-  --bg-gradient: linear-gradient(145deg, #1a0808 0%, #2e1010 40%, #1c0c0c 100%);
+  --bg-gradient: linear-gradient(155deg, #0d0404 0%, #1a0808 25%, #2e1010 50%, #1c0c0c 75%, #120606 100%);
+  --bg-texture: repeating-linear-gradient(45deg, transparent, transparent 14px, rgba(200,150,50,0.04) 14px, rgba(200,150,50,0.04) 15px, transparent 15px, transparent 29px, rgba(200,150,50,0.04) 29px, rgba(200,150,50,0.04) 30px);
+  --bg-texture-size: auto;
   --glass-bg: rgba(35, 12, 12, 0.78);
   --glass-border: rgba(200, 150, 50, 0.2);
   --glass-blur: 12px;
@@ -285,8 +300,9 @@
 }
 
 .theme-renaissance-light {
-  --bg-page: #fdf5e8;
-  --bg-gradient: linear-gradient(145deg, #faf0dc 0%, #fdf5e8 50%, #f5e8cc 100%);
+  --bg-gradient: linear-gradient(155deg, #d8c098 0%, #e6d4b8 25%, #eadcbc 55%, #e0cca8 80%, #d4b888 100%);
+  --bg-texture: repeating-linear-gradient(45deg, transparent, transparent 14px, rgba(160,100,30,0.05) 14px, rgba(160,100,30,0.05) 15px, transparent 15px, transparent 29px, rgba(160,100,30,0.05) 29px, rgba(160,100,30,0.05) 30px);
+  --bg-texture-size: auto;
   --glass-bg: rgba(253, 246, 232, 0.82);
   --glass-border: rgba(160, 100, 30, 0.18);
   --glass-blur: 12px;
@@ -304,8 +320,9 @@
 
 /* ── High Contrast ── */
 .theme-highcontrast-dark {
-  --bg-page: #000000;
-  --bg-gradient: linear-gradient(135deg, #000000 0%, #0a0a0a 100%);
+  --bg-gradient: #000000;
+  --bg-texture: none;
+  --bg-texture-size: auto;
   --glass-bg: rgba(0, 0, 0, 0.92);
   --glass-border: rgba(255, 255, 0, 0.6);
   --glass-blur: 0px;
@@ -322,8 +339,9 @@
 }
 
 .theme-highcontrast-light {
-  --bg-page: #ffffff;
-  --bg-gradient: linear-gradient(135deg, #ffffff 0%, #f8f8f8 100%);
+  --bg-gradient: #ffffff;
+  --bg-texture: none;
+  --bg-texture-size: auto;
   --glass-bg: rgba(255, 255, 255, 0.95);
   --glass-border: rgba(0, 0, 200, 0.7);
   --glass-blur: 0px;
@@ -341,8 +359,9 @@
 
 /* ── Gruvbox ── */
 .theme-gruvbox-dark {
-  --bg-page: #282828;
-  --bg-gradient: linear-gradient(135deg, #282828 0%, #32302f 50%, #1d2021 100%);
+  --bg-gradient: linear-gradient(155deg, #1d2021 0%, #282828 30%, #32302f 60%, #1d2021 100%);
+  --bg-texture: repeating-linear-gradient(90deg, transparent, transparent 12px, rgba(215,153,33,0.04) 12px, rgba(215,153,33,0.04) 13px), repeating-linear-gradient(0deg, transparent, transparent 12px, rgba(215,153,33,0.025) 12px, rgba(215,153,33,0.025) 13px);
+  --bg-texture-size: auto;
   --glass-bg: rgba(40, 40, 40, 0.85);
   --glass-border: rgba(215, 153, 33, 0.25);
   --glass-blur: 10px;
@@ -359,8 +378,9 @@
 }
 
 .theme-gruvbox-light {
-  --bg-page: #fbf1c7;
-  --bg-gradient: linear-gradient(135deg, #f9f5d7 0%, #fbf1c7 50%, #f2e5bc 100%);
+  --bg-gradient: linear-gradient(155deg, #d4c080 0%, #e4dc9e 30%, #e8d89a 60%, #dcc898 100%);
+  --bg-texture: repeating-linear-gradient(90deg, transparent, transparent 12px, rgba(180,118,20,0.05) 12px, rgba(180,118,20,0.05) 13px), repeating-linear-gradient(0deg, transparent, transparent 12px, rgba(180,118,20,0.03) 12px, rgba(180,118,20,0.03) 13px);
+  --bg-texture-size: auto;
   --glass-bg: rgba(251, 241, 199, 0.85);
   --glass-border: rgba(180, 118, 20, 0.22);
   --glass-blur: 12px;
@@ -378,8 +398,9 @@
 
 /* ── Nord ── */
 .theme-nord-dark {
-  --bg-page: #2e3440;
-  --bg-gradient: linear-gradient(135deg, #2e3440 0%, #3b4252 50%, #242831 100%);
+  --bg-gradient: linear-gradient(155deg, #1a1f2c 0%, #2e3440 30%, #3b4252 60%, #242831 100%);
+  --bg-texture: repeating-linear-gradient(-60deg, transparent, transparent 25px, rgba(136,192,208,0.03) 25px, rgba(136,192,208,0.03) 26px);
+  --bg-texture-size: auto;
   --glass-bg: rgba(46, 52, 64, 0.82);
   --glass-border: rgba(136, 192, 208, 0.20);
   --glass-blur: 12px;
@@ -396,8 +417,9 @@
 }
 
 .theme-nord-light {
-  --bg-page: #eceff4;
-  --bg-gradient: linear-gradient(135deg, #eceff4 0%, #e5e9f0 50%, #d8dee9 100%);
+  --bg-gradient: linear-gradient(155deg, #b8c4d8 0%, #ccd4e0 30%, #d4dae4 60%, #c4ced8 100%);
+  --bg-texture: repeating-linear-gradient(-60deg, transparent, transparent 25px, rgba(76,120,148,0.04) 25px, rgba(76,120,148,0.04) 26px);
+  --bg-texture-size: auto;
   --glass-bg: rgba(236, 239, 244, 0.82);
   --glass-border: rgba(76, 120, 148, 0.18);
   --glass-blur: 14px;
@@ -415,8 +437,9 @@
 
 /* ── Solarized ── */
 .theme-solarized-dark {
-  --bg-page: #002b36;
-  --bg-gradient: linear-gradient(135deg, #002b36 0%, #073642 50%, #00212c 100%);
+  --bg-gradient: linear-gradient(155deg, #001820 0%, #002b36 30%, #073642 60%, #001820 100%);
+  --bg-texture: repeating-linear-gradient(0deg, transparent, transparent 5px, rgba(42,161,152,0.04) 5px, rgba(42,161,152,0.04) 6px);
+  --bg-texture-size: auto;
   --glass-bg: rgba(0, 43, 54, 0.82);
   --glass-border: rgba(42, 161, 152, 0.22);
   --glass-blur: 12px;
@@ -433,8 +456,9 @@
 }
 
 .theme-solarized-light {
-  --bg-page: #fdf6e3;
-  --bg-gradient: linear-gradient(135deg, #fdf6e3 0%, #eee8d5 50%, #f5efda 100%);
+  --bg-gradient: linear-gradient(155deg, #d4c49c 0%, #dcd4b8 30%, #e4d8b8 60%, #dccca4 100%);
+  --bg-texture: repeating-linear-gradient(0deg, transparent, transparent 5px, rgba(42,161,152,0.05) 5px, rgba(42,161,152,0.05) 6px);
+  --bg-texture-size: auto;
   --glass-bg: rgba(253, 246, 227, 0.85);
   --glass-border: rgba(42, 161, 152, 0.20);
   --glass-blur: 14px;
@@ -457,34 +481,21 @@ html, body, #root {
   font-family: var(--font-body);
   color: var(--text-primary);
   -webkit-font-smoothing: antialiased;
-  /* Background is applied per-page so theme class takes effect */
-  background: var(--bg-page);
+  /* HomePage: dramatic radial blobs — no tile */
+  background:
+    radial-gradient(ellipse 70% 55% at 10% 15%, rgba(108, 99, 255, 0.28) 0%, transparent 65%),
+    radial-gradient(ellipse 55% 45% at 90% 80%, rgba(0, 214, 143, 0.18) 0%, transparent 60%),
+    radial-gradient(ellipse 80% 50% at 55% 110%, rgba(60, 40, 120, 0.45) 0%, transparent 65%),
+    radial-gradient(ellipse 40% 35% at 75% 10%, rgba(255, 100, 180, 0.10) 0%, transparent 55%),
+    linear-gradient(160deg, #070a12 0%, #0f1117 40%, #131826 100%);
+  background-size: cover;
+  background-attachment: fixed;
 }
 
-/* HomePage: no theme class on body, so bg-page/:root fallback applies here — correct */
-/* BoardPage: theme class is on .board-page, so override background there */
+/* BoardPage carries the theme class — layered texture + gradient */
 .board-page {
-  background: var(--bg-page);
-}
-
-body::before {
-  content: '';
-  position: fixed;
-  inset: 0;
-  background: var(--bg-gradient);
-  z-index: -1;
-}
-
-/* On board pages, the body::before gradient also needs to match the theme.
-   We achieve this by placing a matching pseudo-element on .board-page itself
-   that sits above body::before and covers the viewport. */
-.board-page::before {
-  content: '';
-  position: fixed;
-  inset: 0;
-  background: var(--bg-gradient);
-  z-index: -1;
-  pointer-events: none;
+  background: var(--bg-texture, none), var(--bg-gradient);
+  background-size: var(--bg-texture-size, auto), cover;
 }
 
 /* ── Scrollbars ── */

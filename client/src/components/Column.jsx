@@ -1,13 +1,44 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { Droppable } from '@hello-pangea/dnd';
 import Card from './Card';
 import AddCardForm from './AddCardForm';
 import './Column.css';
 
-export default function Column({ column, onAddCard, onDeleteCard, onDeleteColumn, onToggleReaction, onAddReply, onDeleteReply, onUpdateColor }) {
+export default function Column({ column, onAddCard, onDeleteCard, onDeleteColumn, onToggleReaction, onAddReply, onDeleteReply, onUpdateColor, onRenameColumn }) {
   const [confirmDelete, setConfirmDelete] = useState(false);
-  const [showColorPicker, setShowColorPicker] = useState(false);
+  const [editingTitle, setEditingTitle] = useState(false);
+  const [draftTitle, setDraftTitle] = useState('');
   const colorInputRef = useRef(null);
+  const titleInputRef = useRef(null);
+
+  useEffect(() => {
+    if (editingTitle && titleInputRef.current) {
+      titleInputRef.current.select();
+    }
+  }, [editingTitle]);
+
+  const handleTitleClick = () => {
+    setDraftTitle(column.title);
+    setEditingTitle(true);
+  };
+
+  const saveTitle = () => {
+    const trimmed = draftTitle.trim();
+    if (trimmed && trimmed !== column.title) {
+      onRenameColumn(column.id, trimmed);
+    }
+    setEditingTitle(false);
+  };
+
+  const cancelTitle = () => {
+    setEditingTitle(false);
+    setDraftTitle(column.title);
+  };
+
+  const handleTitleKeyDown = (e) => {
+    if (e.key === 'Enter') { e.preventDefault(); saveTitle(); }
+    if (e.key === 'Escape') { e.preventDefault(); cancelTitle(); }
+  };
 
   const handleDeleteClick = () => {
     if (!confirmDelete) { setConfirmDelete(true); return; }
@@ -19,8 +50,6 @@ export default function Column({ column, onAddCard, onDeleteCard, onDeleteColumn
   };
 
   const handleColorIconClick = () => {
-    setShowColorPicker((v) => !v);
-    // Trigger native color picker immediately on next tick
     setTimeout(() => colorInputRef.current?.click(), 0);
   };
 
@@ -30,7 +59,25 @@ export default function Column({ column, onAddCard, onDeleteCard, onDeleteColumn
     <div className="column" style={colStyle}>
       <div className="column-header">
         <div className="column-header-left">
-          <h3 className="column-title">{column.title}</h3>
+          {editingTitle ? (
+            <input
+              ref={titleInputRef}
+              className="column-title-input"
+              value={draftTitle}
+              onChange={(e) => setDraftTitle(e.target.value)}
+              onKeyDown={handleTitleKeyDown}
+              onBlur={saveTitle}
+              maxLength={60}
+            />
+          ) : (
+            <h3
+              className="column-title"
+              onClick={handleTitleClick}
+              title="Click to rename"
+            >
+              {column.title}
+            </h3>
+          )}
           <span className="badge badge-count">{column.cards.length}</span>
         </div>
         <div className="column-header-actions">
@@ -61,7 +108,7 @@ export default function Column({ column, onAddCard, onDeleteCard, onDeleteColumn
             onBlur={() => setConfirmDelete(false)}
             title={confirmDelete ? 'Click to confirm delete' : 'Delete column'}
           >
-            {confirmDelete ? '✓?' : '⋯'}
+            {confirmDelete ? '✓?' : '✕'}
           </button>
         </div>
       </div>

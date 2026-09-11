@@ -1,7 +1,6 @@
 .card {
   background: var(--glass-bg);
-  backdrop-filter: blur(calc(var(--glass-blur) * 0.6));
-  -webkit-backdrop-filter: blur(calc(var(--glass-blur) * 0.6));
+  /* No backdrop-filter — card is a draggable element; blur creates stacking context that breaks DnD */
   border: 1px solid var(--glass-border);
   border-radius: var(--radius-md);
   padding: 12px 14px;
