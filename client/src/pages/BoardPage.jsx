@@ -12,7 +12,7 @@ export default function BoardPage() {
   const { boardId } = useParams();
   const navigate = useNavigate();
   const { connected } = useSocket();
-  const { board, setBoard, loading, error, addColumn, deleteColumn, addCard, moveCard, deleteCard, toggleReaction, addReply, deleteReply } = useBoard(boardId);
+  const { board, setBoard, loading, error, addColumn, deleteColumn, updateColumnColor, addCard, moveCard, deleteCard, toggleReaction, addReply, deleteReply } = useBoard(boardId);
 
   const [showNamePrompt, setShowNamePrompt] = useState(false);
   const [showExportModal, setShowExportModal] = useState(false);
@@ -83,8 +83,10 @@ export default function BoardPage() {
     );
   }
 
+  const themeClass = `theme-${board.theme || 'classic-dark'}`;
+
   return (
-    <div className="board-page">
+    <div className={`board-page ${themeClass}`}>
       {showNamePrompt && (
         <div className="modal-overlay">
           <div className="modal-content">
@@ -173,6 +175,7 @@ export default function BoardPage() {
               onAddCard={addCard}
               onDeleteCard={deleteCard}
               onDeleteColumn={deleteColumn}
+              onUpdateColor={updateColumnColor}
               onToggleReaction={toggleReaction}
               onAddReply={addReply}
               onDeleteReply={deleteReply}

@@ -17,6 +17,8 @@ export default function HomePage() {
   const [newBoardName, setNewBoardName] = useState('');
   const [newGroupName, setNewGroupName] = useState('');
   const [creating, setCreating] = useState(false);
+  const [selectedTheme, setSelectedTheme] = useState('classic-dark');
+  const [themePickerOpen, setThemePickerOpen] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const { settings, updateSettings } = useSettings();
 
@@ -76,10 +78,11 @@ export default function HomePage() {
     const name = newBoardName.trim() || 'Retro Board';
     if (!socket.current) return;
     setCreating(true);
-    socket.current.emit('create_board', { name }, ({ ok, board }) => {
+    socket.current.emit('create_board', { name, theme: selectedTheme }, ({ ok, board }) => {
       setCreating(false);
       if (ok) {
         setNewBoardName('');
+        setSelectedTheme('classic-dark');
         navigate(`/board/${board.id}`);
       }
     });
@@ -195,16 +198,154 @@ export default function HomePage() {
           <div className="create-grid">
             <div className="create-box">
               <h2 className="section-title">New Board</h2>
-              <form className="create-form" onSubmit={handleCreate}>
-                <input
-                  type="text"
-                  placeholder="Sprint 42 Retrospective…"
-                  value={newBoardName}
-                  onChange={(e) => setNewBoardName(e.target.value)}
-                />
-                <button type="submit" className="btn btn-primary" disabled={creating}>
-                  {creating ? 'Creating…' : '+ Board'}
-                </button>
+              <form className="create-form-board" onSubmit={handleCreate}>
+                <div className="create-board-row">
+                  <input
+                    type="text"
+                    placeholder="Sprint 42 Retrospective…"
+                    value={newBoardName}
+                    onChange={(e) => setNewBoardName(e.target.value)}
+                  />
+                  <button type="submit" className="btn btn-primary" disabled={creating}>
+                    {creating ? 'Creating…' : '+ Board'}
+                  </button>
+                </div>
+                <div className="theme-picker">
+                  <button
+                    type="button"
+                    className="theme-picker-toggle"
+                    onClick={() => setThemePickerOpen((v) => !v)}
+                  >
+                    <span className="theme-picker-toggle-swatch" style={{ background: {
+                      'classic-dark': 'linear-gradient(135deg, #0f1117 0%, #1a1d27 100%)',
+                      'classic-light': 'linear-gradient(135deg, #e8ecf5 0%, #f5f7fb 100%)',
+                      'cyberpunk-dark': 'radial-gradient(ellipse at 20% 50%, #1a0030 0%, #0a0010 60%, #001020 100%)',
+                      'cyberpunk-light': 'linear-gradient(135deg, #dff0ff 0%, #eef8ff 100%)',
+                      'vaporwave-dark': 'linear-gradient(160deg, #1a0533 0%, #2d0d5c 50%, #0d1a4a 100%)',
+                      'vaporwave-light': 'linear-gradient(150deg, #fce8ff 0%, #f5e6ff 100%)',
+                      'sunset-dark': 'linear-gradient(160deg, #1a0800 0%, #2d1200 50%, #1a0a10 100%)',
+                      'sunset-light': 'linear-gradient(150deg, #fff0e0 0%, #fff8f0 100%)',
+                      'desert-dark': 'linear-gradient(145deg, #1a1200 0%, #2d2000 100%)',
+                      'desert-light': 'linear-gradient(145deg, #faf2df 0%, #fdf8ef 100%)',
+                      'artnouveau-dark': 'linear-gradient(150deg, #0e1a0f 0%, #1a2e1a 100%)',
+                      'artnouveau-light': 'linear-gradient(150deg, #f5f0e0 0%, #f8f4e8 100%)',
+                      'renaissance-dark': 'linear-gradient(145deg, #1a0808 0%, #2e1010 100%)',
+                      'renaissance-light': 'linear-gradient(145deg, #faf0dc 0%, #fdf5e8 100%)',
+                      'highcontrast-dark': 'linear-gradient(135deg, #000000 0%, #0a0a0a 100%)',
+                      'highcontrast-light': 'linear-gradient(135deg, #ffffff 0%, #f8f8f8 100%)',
+                      'gruvbox-dark': 'linear-gradient(135deg, #282828 0%, #32302f 100%)',
+                      'gruvbox-light': 'linear-gradient(135deg, #f9f5d7 0%, #fbf1c7 100%)',
+                      'nord-dark': 'linear-gradient(135deg, #2e3440 0%, #3b4252 100%)',
+                      'nord-light': 'linear-gradient(135deg, #eceff4 0%, #e5e9f0 100%)',
+                      'solarized-dark': 'linear-gradient(135deg, #002b36 0%, #073642 100%)',
+                      'solarized-light': 'linear-gradient(135deg, #fdf6e3 0%, #eee8d5 100%)',
+                    }[selectedTheme] || '' }} />
+                    <span className="theme-picker-toggle-label">
+                      Theme: <strong>{selectedTheme.replace('-', ' ').replace(/\b\w/g, c => c.toUpperCase())}</strong>
+                    </span>
+                    <span className={`theme-picker-chevron${themePickerOpen ? ' open' : ''}`}>▾</span>
+                  </button>
+                  <div className={`theme-picker-panel${themePickerOpen ? ' open' : ''}`}>
+                  <div><div>{[
+                    {
+                      group: 'Classic',
+                      themes: [
+                        { id: 'classic-dark',  label: 'Dark',  bg: 'linear-gradient(135deg, #0f1117 0%, #1a1d27 100%)' },
+                        { id: 'classic-light', label: 'Light', bg: 'linear-gradient(135deg, #e8ecf5 0%, #f5f7fb 100%)' },
+                      ],
+                    },
+                    {
+                      group: 'Cyberpunk',
+                      themes: [
+                        { id: 'cyberpunk-dark',  label: 'Dark',  bg: 'radial-gradient(ellipse at 20% 50%, #1a0030 0%, #0a0010 60%, #001020 100%)' },
+                        { id: 'cyberpunk-light', label: 'Light', bg: 'linear-gradient(135deg, #dff0ff 0%, #eef8ff 100%)' },
+                      ],
+                    },
+                    {
+                      group: 'Vaporwave',
+                      themes: [
+                        { id: 'vaporwave-dark',  label: 'Dark',  bg: 'linear-gradient(160deg, #1a0533 0%, #2d0d5c 50%, #0d1a4a 100%)' },
+                        { id: 'vaporwave-light', label: 'Light', bg: 'linear-gradient(150deg, #fce8ff 0%, #f5e6ff 100%)' },
+                      ],
+                    },
+                    {
+                      group: 'Sunset',
+                      themes: [
+                        { id: 'sunset-dark',  label: 'Dark',  bg: 'linear-gradient(160deg, #1a0800 0%, #2d1200 50%, #1a0a10 100%)' },
+                        { id: 'sunset-light', label: 'Light', bg: 'linear-gradient(150deg, #fff0e0 0%, #fff8f0 100%)' },
+                      ],
+                    },
+                    {
+                      group: 'Desert',
+                      themes: [
+                        { id: 'desert-dark',  label: 'Dark',  bg: 'linear-gradient(145deg, #1a1200 0%, #2d2000 100%)' },
+                        { id: 'desert-light', label: 'Light', bg: 'linear-gradient(145deg, #faf2df 0%, #fdf8ef 100%)' },
+                      ],
+                    },
+                    {
+                      group: 'Art Nouveau',
+                      themes: [
+                        { id: 'artnouveau-dark',  label: 'Dark',  bg: 'linear-gradient(150deg, #0e1a0f 0%, #1a2e1a 100%)' },
+                        { id: 'artnouveau-light', label: 'Light', bg: 'linear-gradient(150deg, #f5f0e0 0%, #f8f4e8 100%)' },
+                      ],
+                    },
+                    {
+                      group: 'Renaissance',
+                      themes: [
+                        { id: 'renaissance-dark',  label: 'Dark',  bg: 'linear-gradient(145deg, #1a0808 0%, #2e1010 100%)' },
+                        { id: 'renaissance-light', label: 'Light', bg: 'linear-gradient(145deg, #faf0dc 0%, #fdf5e8 100%)' },
+                      ],
+                    },
+                    {
+                      group: 'High Contrast',
+                      themes: [
+                        { id: 'highcontrast-dark',  label: 'Dark',  bg: 'linear-gradient(135deg, #000000 0%, #0a0a0a 100%)' },
+                        { id: 'highcontrast-light', label: 'Light', bg: 'linear-gradient(135deg, #ffffff 0%, #f8f8f8 100%)' },
+                      ],
+                    },
+                    {
+                      group: 'Gruvbox',
+                      themes: [
+                        { id: 'gruvbox-dark',  label: 'Dark',  bg: 'linear-gradient(135deg, #282828 0%, #32302f 100%)' },
+                        { id: 'gruvbox-light', label: 'Light', bg: 'linear-gradient(135deg, #f9f5d7 0%, #fbf1c7 100%)' },
+                      ],
+                    },
+                    {
+                      group: 'Nord',
+                      themes: [
+                        { id: 'nord-dark',  label: 'Dark',  bg: 'linear-gradient(135deg, #2e3440 0%, #3b4252 100%)' },
+                        { id: 'nord-light', label: 'Light', bg: 'linear-gradient(135deg, #eceff4 0%, #e5e9f0 100%)' },
+                      ],
+                    },
+                    {
+                      group: 'Solarized',
+                      themes: [
+                        { id: 'solarized-dark',  label: 'Dark',  bg: 'linear-gradient(135deg, #002b36 0%, #073642 100%)' },
+                        { id: 'solarized-light', label: 'Light', bg: 'linear-gradient(135deg, #fdf6e3 0%, #eee8d5 100%)' },
+                      ],
+                    },
+                  ].map(({ group, themes }) => (
+                    <div key={group} className="theme-group">
+                      <span className="theme-group-label">{group}</span>
+                      <div className="theme-group-swatches">
+                        {themes.map((t) => (
+                          <button
+                            key={t.id}
+                            type="button"
+                            className={`theme-swatch${selectedTheme === t.id ? ' theme-swatch--active' : ''}`}
+                            onClick={() => setSelectedTheme(t.id)}
+                            title={`${group} ${t.label}`}
+                            style={{ background: t.bg }}
+                          >
+                            <span className="theme-swatch-label">{t.label}</span>
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                  </div></div>
+                  </div>
+                </div>
               </form>
             </div>
             <div className="create-box">

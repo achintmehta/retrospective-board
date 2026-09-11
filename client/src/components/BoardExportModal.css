@@ -1,7 +1,7 @@
 .modal-content.export-modal {
   width: 90%;
   max-width: 450px;
-  background: var(--bg-card);
+  background: var(--glass-bg);
   border: 1px solid var(--border-color);
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-2xl);
@@ -32,7 +32,7 @@
   align-items: center;
   gap: 16px;
   padding: 16px;
-  background: var(--bg-secondary);
+  background: var(--glass-bg);
   border: 1px solid var(--border-color);
   border-radius: var(--radius-md);
   cursor: pointer;
@@ -50,7 +50,7 @@
 
 .option-icon {
   font-size: 24px;
-  background: var(--bg-primary);
+  background: var(--glass-bg);
   width: 48px;
   height: 48px;
   display: flex;

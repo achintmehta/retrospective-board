@@ -12,13 +12,8 @@ export function SettingsProvider({ children }) {
     app_subtitle: 'Real-time retrospective collaboration',
     app_icon_type: 'emoji',
     app_icon_value: '🔄',
-    theme_bg_color: '#0f1117',
-    theme_font_color: '#e8eaf6',
-    theme_dashboard_card_color: '#1a1d27',
-    theme_retro_card_color: '#1e2130',
-    theme_column_color: '#1a1d27',
     theme_accent_color: '#6c63ff',
-    theme_accent_hover_color: '#7c74ff'
+    theme_accent_hover_color: '#7c74ff',
   });
 
   // Fetch initial

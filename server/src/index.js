@@ -9,7 +9,7 @@ require('./db/database');
 
 const {
   createBoard, deleteBoard, listBoards,
-  addColumn, deleteColumn,
+  addColumn, deleteColumn, updateColumnColor,
   addCard, moveCard, deleteCard,
   addReply, deleteReply,
   addReaction, removeReaction,
@@ -405,9 +405,9 @@ io.on('connection', (socket) => {
 
   // ── Boards ──────────────────────────────────────────────────────────────────
 
-  socket.on('create_board', async ({ name }, callback) => {
+  socket.on('create_board', async ({ name, theme }, callback) => {
     try {
-      const board = await createBoard(name || 'Untitled Retro');
+      const board = await createBoard(name || 'Untitled Retro', theme);
       io.emit('board_created', board);
       notifyResourceListChanged();
       callback?.({ ok: true, board });
@@ -461,9 +461,9 @@ io.on('connection', (socket) => {
 
   // ── Columns ─────────────────────────────────────────────────────────────────
 
-  socket.on('add_column', async ({ boardId, title }, callback) => {
+  socket.on('add_column', async ({ boardId, title, color }, callback) => {
     try {
-      const column = await addColumn(boardId, title || 'New Column');
+      const column = await addColumn(boardId, title || 'New Column', color);
       io.to(`board:${boardId}`).emit('column_added', column);
       callback?.({ ok: true, column });
     } catch (err) {
@@ -476,6 +476,16 @@ io.on('connection', (socket) => {
       await deleteColumn(columnId);
       io.to(`board:${boardId}`).emit('column_deleted', { columnId });
       callback?.({ ok: true });
+    } catch (err) {
+      callback?.({ ok: false, error: err.message });
+    }
+  });
+
+  socket.on('update_column_color', async ({ boardId, columnId, color }, callback) => {
+    try {
+      const column = await updateColumnColor(columnId, color);
+      io.to(`board:${boardId}`).emit('column_color_updated', { columnId, color: column.color });
+      callback?.({ ok: true, column });
     } catch (err) {
       callback?.({ ok: false, error: err.message });
     }

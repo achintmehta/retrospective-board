@@ -1,7 +1,4 @@
-## Purpose
-Define the column-level management capabilities.
-
-## Requirements
+## MODIFIED Requirements
 
 ### Requirement: Add Column
 The system SHALL allow users to add a new column to a board with a title and an optional color tint. The color tint defaults to none (inherits theme glass background).
@@ -15,10 +12,3 @@ The system SHALL allow users to add a new column to a board with a title and an 
 - **WHEN** user selects "Add Column", provides a title, selects "Custom" color, and picks a hex color
 - **THEN** a new column is appended with the chosen hex stored in `columns.color`
 - **THEN** the column renders with the tinted glass background
-
-### Requirement: Delete Column
-The system SHALL allow users to delete an existing column from a board.
-
-#### Scenario: User deletes a column
-- **WHEN** user clicks delete on a specific column
-- **THEN** the column and all cards within it are removed from the board

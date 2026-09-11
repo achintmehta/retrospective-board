@@ -6,13 +6,14 @@
 
 /* Header */
 .home-header {
-  background: var(--bg-secondary);
-  border-bottom: 1px solid var(--border-color);
+  background: var(--glass-bg);
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+  border-bottom: 1px solid var(--glass-border);
   padding: 0 24px;
   position: sticky;
   top: 0;
   z-index: 10;
-  backdrop-filter: blur(12px);
 }
 .home-header-inner {
   max-width: 1200px;
@@ -78,7 +79,7 @@
   align-items: center;
   gap: 8px;
   padding: 6px 12px;
-  background: var(--bg-card);
+  background: var(--glass-bg);
   border: 1px solid var(--border-color);
   border-radius: var(--radius-pill);
 }
@@ -125,7 +126,7 @@
   font-size: 15px;
   padding: 12px 16px;
   border-radius: var(--radius-md);
-  background: var(--bg-secondary);
+  background: var(--glass-bg);
   border: 1px solid var(--border-color);
 }
 .create-form input:focus {
@@ -137,13 +138,173 @@
   border-radius: var(--radius-md);
   white-space: nowrap;
 }
+
+/* Board creation form with theme picker */
+.create-form-board {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.create-board-row {
+  display: flex;
+  gap: 12px;
+  align-items: stretch;
+}
+.create-board-row input {
+  flex: 1;
+  font-size: 15px;
+  padding: 12px 16px;
+  border-radius: var(--radius-md);
+  background: var(--glass-bg);
+  border: 1px solid var(--border-color);
+}
+.create-board-row input:focus {
+  border-color: var(--accent);
+}
+.create-board-row .btn-primary {
+  padding: 12px 24px;
+  font-size: 14px;
+  border-radius: var(--radius-md);
+  white-space: nowrap;
+}
+
+/* Theme picker */
+.theme-picker {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+.theme-picker-toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  background: var(--glass-bg);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  padding: 8px 12px;
+  cursor: pointer;
+  transition: border-color var(--transition-speed), background var(--transition-speed);
+  text-align: left;
+  font-family: var(--font-body);
+}
+.theme-picker-toggle:hover {
+  border-color: var(--border-hover);
+  background: var(--bg-hover);
+}
+.theme-picker-toggle-swatch {
+  width: 20px;
+  height: 20px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--glass-border);
+  flex-shrink: 0;
+  display: block;
+}
+.theme-picker-toggle-label {
+  flex: 1;
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+.theme-picker-toggle-label strong {
+  color: var(--text-primary);
+  font-weight: 600;
+}
+.theme-picker-chevron {
+  font-size: 12px;
+  color: var(--text-muted);
+  transition: transform var(--transition-speed);
+  display: inline-block;
+}
+.theme-picker-chevron.open {
+  transform: rotate(180deg);
+}
+.theme-picker-panel {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 0.22s ease;
+}
+.theme-picker-panel.open {
+  grid-template-rows: 1fr;
+}
+/* Grid child: must have overflow:hidden and nothing else for the 0fr trick to work */
+.theme-picker-panel > div {
+  overflow: hidden;
+  min-height: 0;
+}
+/* Inner scroll container sits inside the clipped grid child */
+.theme-picker-panel > div > div {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 10px 4px 4px;
+  max-height: 260px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border-color) transparent;
+}
+.theme-group {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.theme-group-label {
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-muted);
+  width: 80px;
+  flex-shrink: 0;
+  opacity: 0.7;
+}
+.theme-group-swatches {
+  display: flex;
+  gap: 6px;
+}
+.theme-swatch {
+  position: relative;
+  width: 64px;
+  height: 40px;
+  border-radius: var(--radius-md);
+  border: 2px solid transparent;
+  cursor: pointer;
+  overflow: hidden;
+  transition: border-color var(--transition-speed), transform var(--transition-speed);
+  padding: 0;
+  flex-shrink: 0;
+}
+.theme-swatch:hover {
+  transform: translateY(-2px);
+  border-color: var(--border-hover);
+}
+.theme-swatch--active {
+  border-color: var(--accent) !important;
+  box-shadow: 0 0 0 2px rgba(var(--accent-rgb), 0.3);
+}
+.theme-swatch-label {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: rgba(0, 0, 0, 0.5);
+  color: #fff;
+  font-size: 8px;
+  font-weight: 600;
+  text-align: center;
+  padding: 2px 3px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-family: sans-serif;
+  letter-spacing: 0.02em;
+}
 .create-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
   gap: 32px;
 }
 .create-box {
-  background: var(--bg-card);
+  background: var(--glass-bg);
   padding: 32px;
   border-radius: var(--radius-lg);
   border: 1px solid var(--border-color);
@@ -178,23 +339,23 @@
   flex-direction: column;
   align-items: flex-start;
   gap: 20px;
-  background: var(--bg-secondary);
+  background: var(--glass-bg);
   border: 1px solid var(--border-color);
   border-radius: var(--radius-lg);
   padding: 24px;
   cursor: pointer;
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all var(--transition-speed) cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
   overflow: hidden;
 }
 .board-card:hover {
   border-color: var(--accent);
-  background: var(--bg-card);
+  background: var(--glass-bg);
   transform: translateY(-4px);
   box-shadow: 0 12px 24px rgba(0, 0, 0, 0.3);
 }
 .board-card.is-dragging {
-  background: var(--bg-card);
+  background: var(--glass-bg);
   border-color: var(--accent);
   box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
   transform: scale(1.05);
@@ -268,7 +429,7 @@
   align-items: center;
   justify-content: center;
   font-size: 14px;
-  transition: all 0.2s;
+  transition: all var(--transition-speed);
 }
 .board-delete-btn { color: #ff3b30; }
 .board-remove-group-btn { color: var(--accent); }
@@ -283,7 +444,7 @@
   gap: 64px;
 }
 .group-section {
-  background: var(--bg-card);
+  background: var(--glass-bg);
   border: 1px solid var(--border-color);
   border-radius: var(--radius-xl);
   padding: 32px;

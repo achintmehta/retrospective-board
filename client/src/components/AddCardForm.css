@@ -8,7 +8,7 @@
   font-size: 13px;
   padding: 8px 12px;
   cursor: pointer;
-  transition: all 0.15s;
+  transition: all var(--transition-speed);
   text-align: left;
 }
 .add-card-trigger:hover {
@@ -21,8 +21,8 @@
   display: flex;
   flex-direction: column;
   gap: 8px;
-  background: var(--bg-card);
-  border: 1px solid var(--border-color);
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
   border-radius: var(--radius-md);
   padding: 12px;
   animation: slideDown 0.15s ease;
@@ -50,7 +50,7 @@
   gap: 4px;
   padding: 4px;
   border-radius: var(--radius-sm);
-  transition: all 0.15s;
+  transition: all var(--transition-speed);
 }
 .image-upload-btn:hover {
   background: rgba(255,255,255,0.05); /* or var(--bg-hover) if defined */

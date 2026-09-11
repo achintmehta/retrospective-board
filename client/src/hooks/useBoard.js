@@ -132,9 +132,22 @@ export function useBoard(boardId) {
       });
     };
 
+    const onColumnColorUpdated = ({ columnId, color }) => {
+      setBoard((prev) => {
+        if (!prev) return prev;
+        return {
+          ...prev,
+          columns: prev.columns.map((col) =>
+            col.id === columnId ? { ...col, color } : col
+          ),
+        };
+      });
+    };
+
     s.on('board_state', onBoardState);
     s.on('column_added', onColumnAdded);
     s.on('column_deleted', onColumnDeleted);
+    s.on('column_color_updated', onColumnColorUpdated);
     s.on('card_added', onCardAdded);
     s.on('card_deleted', onCardDeleted);
     s.on('reply_added', onReplyAdded);
@@ -147,6 +160,7 @@ export function useBoard(boardId) {
       s.off('board_state', onBoardState);
       s.off('column_added', onColumnAdded);
       s.off('column_deleted', onColumnDeleted);
+      s.off('column_color_updated', onColumnColorUpdated);
       s.off('card_added', onCardAdded);
       s.off('card_deleted', onCardDeleted);
       s.off('reply_added', onReplyAdded);
@@ -157,12 +171,25 @@ export function useBoard(boardId) {
   }, [boardId, socket, connected]);
 
   // Actions
-  const addColumn = useCallback((title) => {
-    socket.current?.emit('add_column', { boardId, title });
+  const addColumn = useCallback((title, color = null) => {
+    socket.current?.emit('add_column', { boardId, title, color });
   }, [boardId, socket]);
 
   const deleteColumn = useCallback((columnId) => {
     socket.current?.emit('delete_column', { boardId, columnId });
+  }, [boardId, socket]);
+
+  const updateColumnColor = useCallback((columnId, color) => {
+    setBoard((prev) => {
+      if (!prev) return prev;
+      return {
+        ...prev,
+        columns: prev.columns.map((col) =>
+          col.id === columnId ? { ...col, color } : col
+        ),
+      };
+    });
+    socket.current?.emit('update_column_color', { boardId, columnId, color });
   }, [boardId, socket]);
 
   const addCard = useCallback((columnId, content, author, imageUrl) => {
@@ -291,5 +318,5 @@ export function useBoard(boardId) {
     socket.current?.emit(event, { boardId, cardId, emoji });
   }, [boardId, socket]);
 
-  return { board, setBoard, loading, error, addColumn, deleteColumn, addCard, moveCard, deleteCard, addReply, deleteReply, toggleReaction };
+  return { board, setBoard, loading, error, addColumn, deleteColumn, updateColumnColor, addCard, moveCard, deleteCard, addReply, deleteReply, toggleReaction };
 }
