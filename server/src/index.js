@@ -390,17 +390,61 @@ app.get('*', (req, res) => {
 
 // ─── Socket.IO ────────────────────────────────────────────────────────────────
 
+const presence = new Map();   // boardId → [{ socketId, username }]
+const recentLeave = new Map(); // `${boardId}:${username}` → timeout handle
+
+const REJOIN_GRACE_MS = 5000; // suppress user_joined if same user rejoins within 5s
+
+function broadcastPresence(io, boardId) {
+  const users = (presence.get(boardId) || []).map((u) => ({
+    username: u.username,
+    isAnonymous: !u.username,
+  }));
+  io.to(`board:${boardId}`).emit('presence_updated', { boardId, users });
+}
+
+function removeFromPresence(io, boardId, socketId) {
+  if (!presence.has(boardId)) return;
+  const before = presence.get(boardId);
+  const leaving = before.find((u) => u.socketId === socketId);
+  presence.set(boardId, before.filter((u) => u.socketId !== socketId));
+  broadcastPresence(io, boardId);
+
+  // Mark named user as recently left so a quick rejoin is silent
+  if (leaving && leaving.username) {
+    const key = `${boardId}:${leaving.username}`;
+    if (recentLeave.has(key)) clearTimeout(recentLeave.get(key));
+    recentLeave.set(key, setTimeout(() => recentLeave.delete(key), REJOIN_GRACE_MS));
+  }
+}
+
 io.on('connection', (socket) => {
   console.log(`Client connected: ${socket.id}`);
 
-  // Join a board room on connect
-  socket.on('join_board', (boardId) => {
+  socket.on('join_board', ({ boardId, username } = {}) => {
+    if (!boardId) return;
     socket.join(`board:${boardId}`);
-    console.log(`${socket.id} joined board:${boardId}`);
+    if (!presence.has(boardId)) presence.set(boardId, []);
+    presence.get(boardId).push({ socketId: socket.id, username: username || '' });
+    broadcastPresence(io, boardId);
+
+    if (username) {
+      const key = `${boardId}:${username}`;
+      const isRejoin = recentLeave.has(key);
+      if (isRejoin) {
+        // Cancel the grace-period timer — user is back
+        clearTimeout(recentLeave.get(key));
+        recentLeave.delete(key);
+      } else {
+        io.to(`board:${boardId}`).emit('user_joined', { username });
+      }
+    }
   });
 
-  socket.on('leave_board', (boardId) => {
+  socket.on('leave_board', ({ boardId } = {}) => {
+    if (!boardId) return;
     socket.leave(`board:${boardId}`);
+    removeFromPresence(io, boardId, socket.id);
   });
 
   // ── Boards ──────────────────────────────────────────────────────────────────
@@ -601,6 +645,10 @@ io.on('connection', (socket) => {
 
   socket.on('disconnect', () => {
     console.log(`Client disconnected: ${socket.id}`);
+    for (const [boardId] of presence.entries()) {
+      const exists = presence.get(boardId).some((u) => u.socketId === socket.id);
+      if (exists) removeFromPresence(io, boardId, socket.id);
+    }
   });
 });
 

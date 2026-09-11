@@ -7,20 +7,24 @@ import Column from '../components/Column';
 import AddColumnForm from '../components/AddColumnForm';
 import BoardExportModal from '../components/BoardExportModal';
 import ThemePicker from '../components/ThemePicker';
+import PresencePopover from '../components/PresencePopover';
+import JoinToastStack from '../components/JoinToastStack';
+import { usePresence } from '../hooks/usePresence';
 import './BoardPage.css';
 
 export default function BoardPage() {
   const { boardId } = useParams();
   const navigate = useNavigate();
   const { connected } = useSocket();
-  const { board, setBoard, loading, error, addColumn, deleteColumn, updateColumnColor, renameColumn, updateBoardTheme, addCard, moveCard, deleteCard, toggleReaction, addReply, deleteReply } = useBoard(boardId);
+  const [username, setUsername] = useState(localStorage.getItem('retro_username') || '');
+  const { board, setBoard, loading, error, addColumn, deleteColumn, updateColumnColor, renameColumn, updateBoardTheme, addCard, moveCard, deleteCard, toggleReaction, addReply, deleteReply } = useBoard(boardId, username);
+  const { presenceList, toasts, removeToast } = usePresence(boardId, username);
 
   const [showNamePrompt, setShowNamePrompt] = useState(false);
   const [showExportModal, setShowExportModal] = useState(false);
   const [showThemePicker, setShowThemePicker] = useState(false);
   const themePickerRef = useRef(null);
   const [tempName, setTempName] = useState('');
-  const [username, setUsername] = useState(localStorage.getItem('retro_username') || '');
 
   useEffect(() => {
     const stored = localStorage.getItem('retro_username');
@@ -181,9 +185,10 @@ export default function BoardPage() {
             <span className="user-label">Logged in as:</span>
             <span className="user-name">{username || 'Anonymous'}</span>
           </div>
-          <div className="header-status">
+          <div className="presence-wrap">
             <span className={`connection-dot ${connected ? 'online' : ''}`} title={connected ? 'Connected' : 'Reconnecting…'} />
             <span className="status-text">{connected ? 'Live' : 'Reconnecting…'}</span>
+            <PresencePopover presenceList={presenceList} ownUsername={username} connected={connected} />
           </div>
         </div>
       </header>
@@ -225,6 +230,7 @@ export default function BoardPage() {
           <AddColumnForm onAdd={addColumn} />
         </div>
       </DragDropContext>
+      <JoinToastStack toasts={toasts} onRemove={removeToast} />
     </div>
   );
 }

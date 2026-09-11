@@ -3,7 +3,7 @@ import { useSocket } from '../contexts/SocketContext';
 
 const SERVER_URL = import.meta.env.VITE_SERVER_URL || '';
 
-export function useBoard(boardId) {
+export function useBoard(boardId, username) {
   const { socket, connected } = useSocket();
   const [board, setBoard] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -32,7 +32,7 @@ export function useBoard(boardId) {
   useEffect(() => {
     if (!boardId || !socket.current) return;
     const s = socket.current;
-    s.emit('join_board', boardId);
+    s.emit('join_board', { boardId, username: username || '' });
 
     const onBoardState = (state) => setBoard(state);
 
@@ -184,7 +184,7 @@ export function useBoard(boardId) {
     s.on('reaction_updated', onReactionUpdated);
 
     return () => {
-      s.emit('leave_board', boardId);
+      s.emit('leave_board', { boardId });
       s.off('board_state', onBoardState);
       s.off('column_added', onColumnAdded);
       s.off('column_deleted', onColumnDeleted);

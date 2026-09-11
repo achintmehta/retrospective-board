@@ -113,6 +113,15 @@
 }
 .status-text { font-size: 11px; color: var(--text-muted); }
 
+.presence-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+  cursor: default;
+}
+
 @media (max-width: 768px) {
   .export-btn-label { display: none; }
   .export-header-btn { padding: 6px 8px !important; }
